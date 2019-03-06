@@ -1,0 +1,10 @@
+searchType,fieldValue,icon
+string,ExecProcessor,https://cdn3.iconfinder.com/data/icons/simple-outline/72/black-phone-512.png
+string,LMSlaveInfo,https://cdn3.iconfinder.com/data/icons/simple-outline/72/black-phone-512.png
+string,LMStackMgr,https://cdn3.iconfinder.com/data/icons/simple-outline/72/black-phone-512.png
+string,LicenseUsage,https://cdn3.iconfinder.com/data/icons/simple-outline/72/black-phone-512.png
+string,Metrics,https://cdn3.iconfinder.com/data/icons/simple-outline/72/black-phone-512.png
+string,PeriodicHealthReporter,https://cdn3.iconfinder.com/data/icons/simple-outline/72/black-phone-512.png
+string,SavedSplunker,https://cdn3.iconfinder.com/data/icons/simple-outline/72/black-phone-512.png
+string,Metrics,https://cdn3.iconfinder.com/data/icons/simple-outline/72/black-phone-512.png
+regex,192\.168.+,https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Orange_people_icon.svg/2000px-Orange_people_icon.svg.pngg
