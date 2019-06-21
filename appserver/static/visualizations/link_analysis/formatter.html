@@ -6,17 +6,39 @@
 	</splunk-radio-input>
     </splunk-control-group>
     <splunk-control-group label="Layout Style">
-    <splunk-select name="{{VIZ_NAMESPACE}}.layoutStyle" value="circle">
-        <option value="cose">cose</option>
+    <splunk-select name="{{VIZ_NAMESPACE}}.layoutStyle" value="cose-bilkent">
         <option value="grid">grid</option>
         <option value="cose-bilkent">cose-bilkent</option>
         <option value="circle">circle</option>
-        <option value="cola">cola</option>
+        <option value="klay">klay</option>
+        <option value="dagre">dagre</option>
+        <option value="fcose">fcose</option>
         <option value="concentric">concentric</option>
         <option value="breadthfirst">breadthfirst</option>
-        <option value="springy">springy</option>
-        <option value="arbor">arbor</option>
+
     </splunk-select>
+    </splunk-control-group>
+    <splunk-control-group label="Path Selection Algorithm">
+    <splunk-select name="{{VIZ_NAMESPACE}}.pathAlgo" value="dijkstra">
+        <option value="dijkstra">Dijikstra</option>
+        <option value="aStar">aStar</option>
+        <option value="floydWarshall">floydWarshall</option>
+        <option value="bellmanFord">bellmanFord</option>
+    </splunk-select>
+    </splunk-control-group>
+    <splunk-control-group label="Path Selection Directed">
+    <splunk-radio-input name="{{VIZ_NAMESPACE}}.directed" value="false">
+    <option value="false">False</option>
+    <option value="true">True</option>
+	</splunk-radio-input>
+    </splunk-control-group>
+</form>
+<form class="splunk-formatter-section" section-label="Vizualization Format">
+    <splunk-control-group label="Fit Viewport">
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.viewport" value="True">
+            <option value="true">True</option>
+            <option value="false">false</option>
+        </splunk-radio-input>
     </splunk-control-group>
 </form>
 

@@ -4,9 +4,9 @@
   "description": "Visualization app template. Put a description here.",
   "main": "visualization.js",
   "scripts": {
-    "build": "$SPLUNK_HOME/bin/splunk cmd node ./node_modules/webpack/bin/webpack.js",
-    "devbuild": "$SPLUNK_HOME/bin/splunk cmd node ./node_modules/webpack/bin/webpack.js --progress",
-    "watch": "$SPLUNK_HOME/bin/splunk cmd node ./node_modules/webpack/bin/webpack.js -d --watch --progress"
+    "build": "/opt/splunk/bin/splunk cmd node ./node_modules/webpack/bin/webpack.js",
+    "devbuild": "/opt/splunk/bin/splunk cmd node ./node_modules/webpack/bin/webpack.js --progress",
+    "watch": "/opt/splunk/bin/splunk cmd node ./node_modules/webpack/bin/webpack.js -d --watch --progress"
   },
   "author": "Splunk",
   "license": "MIT",
@@ -16,13 +16,11 @@
   "dependencies": {
     "acorn": "^5.1.2",
     "cytoscape": "^3.3.3",
-    "cytoscape-arbor": "^1.4.1",
-    "cytoscape-cola": "^2.3.0",
     "cytoscape-cose-bilkent": "^4.0.0",
     "cytoscape-cxtmenu": "^3.0.2",
-    "cytoscape-springy": "^1.4.2",
     "d3": "4.10.0",
     "jquery": "^3.3.1",
-    "underscore": "^1.9.1"
+    "splunk-logging": "^0.10.1",
+    "underscore": "^1.9.1",
   }
 }
