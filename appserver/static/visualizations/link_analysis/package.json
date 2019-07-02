@@ -21,6 +21,6 @@
     "d3": "4.10.0",
     "jquery": "^3.3.1",
     "splunk-logging": "^0.10.1",
-    "underscore": "^1.9.1",
+    "underscore": "^1.9.1"
   }
 }

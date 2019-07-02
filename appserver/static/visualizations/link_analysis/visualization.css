@@ -42,7 +42,22 @@
 }
 
 
- #highlighted {
-        stroke: #999;
+
+.highlighted {
+      background-color: #61bffc;
+      line-color: #cc0000;
+      target-arrow-color: #cc0000;
+      transition-property: background-color, line-color, target-arrow-color;
+      transition-duration: 0.5s;
       }
 
+#highlighted {
+        background-color: #61bffc;
+        line-color: #cc0000;
+        target-arrow-color: #cc0000;
+        transition-property: background-color, line-color, target-arrow-color;
+        transition-duration: 0.5s;
+        }
+#node{
+background-color: #90FF33;
+}

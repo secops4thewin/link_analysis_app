@@ -44,7 +44,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 /* 0 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__; /*
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;  /*
 	  * Visualization source
 	  Random ID C ator - https://stackoverflow.com/questions/6860853/generate-random-string-for-div-id
 	  Unique List - https://medium.com/front-end-weekly/getting-unique-values-in-javascript-arrays-17063080f836
@@ -76,15 +76,15 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  d3,
 	  vizUtils
 	) {
-	  // Register Bilkent
-	  coseBilkent(cytoscape);
+	   // Register Bilkent
+	   coseBilkent(cytoscape);
 
-	  // Load menu extension
-	  cxtmenu(cytoscape);
+	   // Load menu extension
+	   cxtmenu(cytoscape);
 
-	  fcose( cytoscape );
-	  dagre( cytoscape );
-	  klay( cytoscape );
+	   fcose(cytoscape);
+	   dagre(cytoscape);
+	   klay(cytoscape);
 
 	  return SplunkVisualizationBase.extend({
 
@@ -92,21 +92,36 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      SplunkVisualizationBase.prototype.initialize.apply(this, arguments);
 	      this.$el = $(this.el);
 
+	         
+	      // Specify a width and height that matches the Splunk console
+	      var width = this.$el.width()
+	      var height = this.$el.height()
+	      // Append an SVG Element
+	      var svg = d3.select(this.el)
+	        .append("div")
+	        .attr('width', width)
+	        .attr('height', height)
+	        .attr('id', 'cy');
+	      // Add a css selector class
+	      this.$el.addClass('splunk-cytoforce');
+
+	      // Initialization logic goes here
+
 	    },
 
 	    // Optionally implement to format data returned from search.
 	    // The returned object will be passed to updateView as 'data'
 	    formatData: function (data) {
-
 	      // Format data
 	      return data;
+
+
 	    },
 
 	    // Implement updateView to render a visualization.
 	    // 'data' will be the data object returned from formatData or from the search
 	    // 'config' will be the configuration property object
 	    updateView: function (data, config) {
-
 
 	      // Guard for empty data
 	      if (data.rows.length < 1) {
@@ -124,20 +139,18 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      // Whether to fit the viewport or not
 	      var viewport = config[this.getPropertyNamespaceInfo().propertyNamespace + 'viewport'] || 'true';
 
-	      var disableImages = config[this.getPropertyNamespaceInfo().propertyNamespace + 'disableImages'] || 'true';
-	      var disableImages = (disableImages == "true");   //returns true
-
 	      // Define whether path finding is directed, only match from source to dest 
 	      var directedPathFind = config[this.getPropertyNamespaceInfo().propertyNamespace + 'directed'] || "false";
-	      
+
+	      var disableImages = config[this.getPropertyNamespaceInfo().propertyNamespace + 'disableImages'] || 'true';
+	      var disableImages = (disableImages == "true"); //returns true
+
+
 	      // Convert directedPathFind String to Boolean
-	      var directedPathFind = (directedPathFind == "true");   //returns true
+	      var directedPathFind = (directedPathFind == "true"); //returns true
 
 	      var pathAlgo = config[this.getPropertyNamespaceInfo().propertyNamespace + 'pathAlgo'] || 'dijkstra';
-
-	      // Clear the div
-	      this.$el.empty();
-
+	   
 	      // Specify a width and height that matches the Splunk console
 	      var width = this.$el.width()
 	      var height = this.$el.height()
@@ -163,6 +176,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      // Create a variable of x that is 0 to enable iteration
 	      var x = 0;
 
+	      // Create variable for line style
+	      var line_style = {};
+
 	      // Create empty array for storing header rows / fields
 	      columns = [];
 
@@ -184,16 +200,6 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      var aniDur = 500;
 	      var easing = 'linear';
 
-	      // Create variable for line style
-	      var line_style = {};
-
-	      // Append an SVG Element
-	      var svg = d3.select(this.el)
-	        .append("div")
-	        .attr('width', width)
-	        .attr('height', height)
-	        .attr('id', 'cy');
-
 	      // Add Cytoscape Element
 	      var cy = cytoscape({
 	        container: document.getElementById('cy'),
@@ -204,41 +210,6 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	          }
 	        }]
 	      });
-	      
-	      /*
-	      Visualisation Default Options Begin
-
-	      */
-
-	     var coseBilkentOptions = {
-	      // Called on `layoutready`
-	      ready: function () {
-	        cy.resize();
-	      },
-	      // Called on `layoutstop`
-	      stop: function () {
-	      },
-	      name: layoutStyle,
-	      // number of ticks per frame; higher is faster but more jerky
-	      refresh: 100,
-	      // Whether to enable incremental mode
-	      randomize: true,
-	      // Type of layout animation. The option set is {'during', 'end', false}
-	      animate: false,
-
-	      hideEdgesOnViewport: true,
-	      hideLabelsOnViewport: true,
-	      // interpolate on high density displays instead of increasing resolution
-	      pixelRatio: 1,
-	      // a motion blur effect that increases perceived performance for little or no cost
-	      motionBlur: true,
-	    };
-	      /*
-	      
-	      Visualisation Default Options End
-
-	      */
-
 
 	      d3.csv("/static/app/link_analysis_app/icons.csv", function (csvData) {
 	        // Empty Number for Regex
@@ -259,45 +230,29 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	          }
 	        });
 
-	        // For each field in the output if the regex matches the pattern variable push it to the columns array
-	        // Set x to 0 so the line numbers match up.
-	        x = 0;
-	        data.fields.forEach(function (column) {
-	          var str = String(column.name);
-	          if (str.match(pattern)) {
-	            columns.push(x);
-	          }
+	            // For each field in the output if the regex matches the pattern variable push it to the columns array
+	           // Set x to 0 so the line numbers match up.
+	           x = 0;
+	           data.fields.forEach(function (column) {
+	             var str = String(column.name);
+	             if (str == "line_label") {
+	               line_style['line_label'] = x;
+	             } else if (str == "line_color" || str == "line_colour") {
+	               line_style['line_color'] = x;
+	             }
+	             x++;
+	           });
 
-	          else if (str == "line_label"){
-	            line_style['line_label'] =  x;
-	          }
-	          else if (str == "line_color" || str == "line_colour"){
-	            line_style['line_color'] =  x;
-	          }
-	          x++;
-	        });
-	        
-	      // If there are header fields with node then push the nodes to the group_list array
-	      if (columns.length >0){
-	        // For each row in the data push the value of the each column into the group_list array.
-	        datum.forEach(function (link) {
-	          var z = 1;
-	          for (i = 0; i < columns.length; i++) {
-	            var node_row = Number(columns[i]);
-	            nodesArray.push(link[node_row]);
-	          }
-	        });
-	      }
-	      // If there are no header fields with node then push the nodes to the group_list array
-	      else{
-	         //For each row in the data push the value of the first and second column into the group_list array.  
-	         datum.forEach(function(link) {
-	          // Create a list of nodes and add to array
-	          nodesArray.push(link[0]);
-	          nodesArray.push(link[1]);
-	       });
-	      }
 
+	           //For each row in the data push the value of the first and second column into the group_list array.  
+	            // Create an incrementer variable for node id
+	            var n = 0;
+	           datum.forEach(function (link) {
+	             // Create a list of nodes and add to array
+	             nodesArray.push(link[0]);
+	             nodesArray.push(link[1]);
+	             
+	           });
 	        // Create a unique list of nodes
 	        const unique = (value, index, self) => {
 	          return self.indexOf(value) === index;
@@ -306,11 +261,6 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	        // Create an incrementer variable for node id
 	        var n = 0;
-	        
-	        // Create Array for nodes and edges
-	        node_arr = [];
-	        edge_arr = [];
-	        
 	        // Foreach unique node add to the node list
 	        nodesUnique.forEach(function (node) {
 	          node_id = "n" + n;
@@ -328,92 +278,92 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	          n++;
 	        });
 
-
-	        // If there are header fields with node then push to the link array
-	        if (columns.length >0){
-	          // For each link in links create a node and push a 0 value group id.
-	          datum.forEach(function (link) {
-
-	            var z = 1;
-	            // While i is less than the total amount of columns (count of nodeXX field)
-	            for (i = 0; z < columns.length; i++) {
-	              // For the total column length pick 2 columns at a time to push to the linksArray array.
-	              node_source = Number(columns[i]);
-	              node_target = Number(columns[z]);
-
-	              // Create a link object to push the target and source to the linksArray array.
-	              target_out = nodesByName[link[node_target]];
-	              source_out = nodesByName[link[node_source]];
-
-	         // Add item to group.  Label must be empty for this
-	         cy.add({
-	          data: {
+	        datum.forEach(function (link) {
+	          // Add nodes to list
+	          source_out = nodesByName[link[0]]
+	          target_out = nodesByName[link[1]]
+	          node_data = {
+	            data:{
 	            source: source_out,
 	            target: target_out,
-	            label: ""
-	          }
+	            }}
+
+	            if (line_style['line_label']){
+	              line_label_num = line_style['line_label']
+	              node_data.data.label = link[line_label_num]
+	            }
+	            node_data.data.color = line_style['line_color'] ? node_data.data.color = link[line_style['line_color']] : "#808080"
+
+	            cy.add(node_data)
+
 	        });
 
-	              // Increment the counter
-	              z++;
-	            }
-	          });
-	        }
-	          // If there are no header fields with node then push to the link array
-	        else {
-	          // If there is only 3 columns that do not have the title 'nodeXX' 
-	          datum.forEach(function (link) {
-	            // Add nodes to list
-	            source_out = nodesByName[link[0]]
-	            target_out = nodesByName[link[1]]
-	            debugger;
-	            line_label = line_style['line_label'] || ""
-	            line_color = line_style['line_color'] || ""
-	            // If the link[line_label] field returns a valid result then return the correct information else return an empty string
-	            label = link[line_label] || ""
-	            // If the link[line_label] field returns a valid result then return the correct information else return an empty string
-	            color = link[line_color] || "#808080"
-	            // Add Group
-	            cy.add({
-	              data: {
-	                source: source_out,
-	                target: target_out,
-	                label: label,
-	                color: color
-	              }
-	            });
+	        /*
+	        Visualisation Default Options Begin
 
-	          });
-	      }
+	        */
+
+	        var coseBilkentOptions = {
+	          // Called on `layoutready`
+	          ready: function () {
+	            cy.resize();
+	          },
+	          // Called on `layoutstop`
+	          stop: function () {},
+	          name: layoutStyle,
+	          // number of ticks per frame; higher is faster but more jerky
+	          refresh: 100,
+	          // Whether to enable incremental mode
+	          randomize: true,
+	          // Type of layout animation. The option set is {'during', 'end', false}
+	          animate: false,
+
+	          hideEdgesOnViewport: true,
+	          hideLabelsOnViewport: true,
+	          // interpolate on high density displays instead of increasing resolution
+	          pixelRatio: 1,
+	          // a motion blur effect that increases perceived performance for little or no cost
+	          motionBlur: true,
+	        };
+	        /*
+	        
+	        Visualisation Default Options End
+
+	        */
+
 
 	        // Cytoscape Styling     
 	        cy.style()
-	          .selector('edge')
-	          .style({
-	            'width': 3,
-	            'edge-text-rotation': 'autorotate',
-	            'target-arrow-shape': 'triangle',
-	            'curve-style': 'bezier',
-	            'line-color': 'data(color)',
-	            'control-point-distance': '30px',
-	            'control-point-step-size': 40,
-	            'control-point-weight': '0.5', // '0': curve towards source node, '1': towards target node.
-	            'label': 'data(label)'
-	          }).update();
+	        .selector('edge')
+	        .style({
+	          'width': 3,
+	          'edge-text-rotation': 'autorotate',
+	          'target-arrow-shape': 'triangle',
+	          'curve-style': 'haystack',
+	          //'line-color': 'data(color)',
+	          "text-valign": "top",
+	          "text-halign": "center",
+	          'min-zoomed-font-size': '1',
+	          'control-point-distance': '30px',
+	          'control-point-step-size': 40,
+	          'control-point-weight': '0.5', // '0': curve towards source node, '1': towards target node.
+	          //'label': 'data(label)'
+	        })
 
-	        // Highlighted Class
+	         // Highlighted Class
+	         cy.style()
+	         .selector('.highlighted')
+	         .style({
+	           'background-color': '#61bffc',
+	           'line-color': '#cc0000',
+	           'target-arrow-color': '#cc0000',
+	           'transition-property': 'background-color, line-color, target-arrow-color',
+	           'transition-duration': '0.5s'
+	         }).update();
+
+	      // Highlighted Class
+	      if (disableImages == false) {
 	        cy.style()
-	          .selector('.highlighted')
-	          .style({
-	            'background-color': '#61bffc',
-	            'line-color': '#cc0000',
-	            'target-arrow-color': '#cc0000',
-	            'transition-property': 'background-color, line-color, target-arrow-color',
-	            'transition-duration': '0.5s'
-	          }).update();
-
-	        if (disableImages == false){
-	          cy.style()
 	          .selector('node')
 	          .style({
 	            'background-image': 'data(background)',
@@ -421,21 +371,25 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	          }).update();
 	        }
 
-	        else if (disableImages == true){
-	          cy.style()
-	          .selector('node')
-	          .style({
-	            'background-color': '#90FF33'
-	          }).update();
+
+
+	      var middle_x = width / 2;
+	      var middle_y = height / 2;
+	      cy.zoom({
+	        level: 0.1, // the zoom level
+	        renderedPosition: {
+	          x: middle_x,
+	          y: middle_y
 	        }
-	        
-	        switch(layoutStyle){
-	          case "cose-bilkent":
+	      });
+
+	      switch (layoutStyle) {
+	        case "cose-bilkent":
 	          cy.layout(coseBilkentOptions).run();
 	          break
-	          
-	          default:
-	            cy.layout({
+
+	        default:
+	          cy.layout({
 	            name: layoutStyle,
 	            // Performance Options
 	            fit: false, // whether to fit the viewport to the graph
@@ -446,16 +400,39 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            // a motion blur effect that increases perceived performance for little or no cost
 	            motionBlur: true,
 	          }).run();
-	          
-	        }
+	          break;
+	      }
+
+	      // Finally  fit to viewport
+	      cy.fit();
+
+	        // Cytoscape Layout
+	        cy.layout({
+	          name: layoutStyle,
+	          padding: 30,
+	          //fit: true,
+	          nodeDimensionsIncludeLabels: true,
+	          animationDuration: aniDur,
+	          // Node repulsion (non overlapping) multiplier
+	          animationEasing: easing
+	        }).run();
+
 
 	        // End CSV Load
 	      });
 
-	      // Finally  fit to viewport
-	      cy.fit()
-
 	      // After The layout has been updated.  Perform additional tasks.
+
+	      var middle_x = width / 2;
+	      var middle_y = height / 2;
+	      cy.zoom({
+	        level: 0.1, // the zoom level
+	        renderedPosition: {
+	          x: middle_x,
+	          y: middle_y
+	        }
+	      });
+
 
 	      // Begin - Add Menu for nodes and background
 	      cy.cxtmenu({
@@ -467,8 +444,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	          },
 	          {
 	            content: 'PlaceholderN',
-	            select: function (ele) {
-	            },
+	            select: function (ele) {},
 	            enabled: true
 
 	          },
@@ -485,15 +461,16 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            }
 	          },
 	          {
-	          content: "Highlight All Paths",
-	          select: function (ele) {
-	            start = ele.id();
-	            highlightAllPathsFrom(start);
+	            content: "Highlight All Paths",
+	            select: function (ele) {
+	              start = ele.id();
+	              highlightAllPathsFrom(start);
+	            }
 	          }
-	        }
-	          
+
 	        ]
 	      });
+
 
 
 	      cy.cxtmenu({
@@ -507,9 +484,18 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            },
 	          },
 	          {
-	            content: 'Delete Items',
+	            content: 'Delete Highlighted Items',
 	            select: function (ele) {
 	              cy.remove(boxedNodes);
+	            },
+	          },
+	          {
+	            content: 'Delete Non Highlighted Nodes',
+	            select: function (ele) {
+	              
+	              var element_del = cy.elements().not(cy.$('.highlighted'));
+	              cy.remove(element_del);
+	              debugger;
 	            },
 	          }
 	        ]
@@ -518,29 +504,28 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      // End - Add Menu for nodes and background
 
 	      // When you highlight a group of nodes add a highlighted class
+	      /*
 	      cy.on('box', function (e) {
 	        let node = e.target;
 	        boxedNodes = boxedNodes.union(node);
 	        boxedNodes.addClass('highlighted');
 	      });
-
-	      // Begin Helper Function Sections
-
-	      // Begin - Single Path Highlighting Function
+	*/
+	      // Begin - Path Highlighting Function
 
 	      var highlightNextEle = function (start_id, end_id) {
 	        // Highlight Elements
 	        startid_hash = "#" + start_id
 	        endid_hash = "#" + end_id
 
-	        switch(pathAlgo) {
+	        switch (pathAlgo) {
 	          case "dijkstra":
 	            // code block
 	            var dijkstra = cy.elements().dijkstra(startid_hash, function (eles) {
 	              return 1
 	            }, directedPathFind);
 	            var djs = dijkstra.pathTo(endid_hash);
-	    
+
 	            for (var x = 0; x < djs.length; x++) {
 	              var el = djs[x];
 	              el.addClass('highlighted');
@@ -549,14 +534,18 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	          case "aStar":
 	            // code block
-	            var aStar = cy.elements().aStar({ root: startid_hash, goal: endid_hash, directed: directedPathFind });
+	            var aStar = cy.elements().aStar({
+	              root: startid_hash,
+	              goal: endid_hash,
+	              directed: directedPathFind
+	            });
 	            for (var x = 0; x < aStar.path.length; x++) {
 	              var el = aStar.path[x];
 	              el.addClass('highlighted');
 	            }
 	            break;
 
-	            case "floydWarshall":
+	          case "floydWarshall":
 	            // code block
 	            var fw = cy.elements().floydWarshall();
 	            fw_collection = fw.path(startid_hash, endid_hash)
@@ -567,7 +556,10 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            break;
 	          case "bellmanFord":
 	            // code block
-	            var bellmanFord = cy.elements().bellmanFord({ root: startid_hash, directed: directedPathFind });
+	            var bellmanFord = cy.elements().bellmanFord({
+	              root: startid_hash,
+	              directed: directedPathFind
+	            });
 	            var djs = bellmanFord.pathTo(endid_hash);
 	            for (var x = 0; x < djs.length; x++) {
 	              var el = djs[x];
@@ -581,30 +573,47 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	              return 1
 	            }, directedPathFind);
 	            var djs = dijkstra.pathTo(endid_hash);
-	    
+
 	            for (var x = 0; x < djs.length; x++) {
 	              var el = djs[x];
 	              el.addClass('highlighted');
 	            }
 	            break;
 	        }
-	            start = undefined;
-	          end = undefined;
+	        start = undefined;
+	        end = undefined;
 	      }
 
 	      // End - Single Path Highlighting Function
 
-	      // Begin - Higlight All Paths From.
-	      function highlightAllPathsFrom(start_node) {
-	        start_node = "#" + start_node;
-	        var bfs = cy.elements().bfs(start_node,1,false);
+	         // Begin - Higlight All Paths From.
+	         function highlightAllPathsFrom(start_node) {
+	          start_node = "#" + start_node;
+	          var bfs = cy.elements().bfs(start_node, 1, false);
 	          for (var x = 0; x < bfs.path.length; x++) {
 	            var el = bfs.path[x];
 	            el.addClass('highlighted');
 	          }
-	      
-	  }
-	      // End Higlight All Nodes between path.
+
+	        }
+	        // End Higlight All Nodes between path.
+
+	      // Debounce Function for improved performance
+	      function debounce(func, wait, immediate) {
+	        var timeout;
+	        return function () {
+	          var context = this,
+	            args = arguments;
+	          var later = function () {
+	            timeout = null;
+	            if (!immediate) func.apply(context, args);
+	          };
+	          var callNow = immediate && !timeout;
+	          clearTimeout(timeout);
+	          timeout = setTimeout(later, wait);
+	          if (callNow) func.apply(context, args);
+	        };
+	      };
 
 	      // Search Icon Function
 	      function searchIcon(searchFieldValue) {
@@ -646,7 +655,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    getInitialDataParams: function () {
 	      return ({
 	        outputMode: SplunkVisualizationBase.ROW_MAJOR_OUTPUT_MODE,
-	        count: 1000
+	        count: 3000
 	      });
 	    },
 
