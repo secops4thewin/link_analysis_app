@@ -3,61 +3,20 @@
  * Class namespacing is good practice.
  */
 
-.links line {
-  stroke: #999;
-  stroke-opacity: 0.6;
+ #cy {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  z-index: 999;
+  active-bg-color: #555;
+  active-bg-opacity: 0.333;
 }
 
-.nodes circle {
-  stroke: #fff;
-  stroke-width: 1.5px;
-}
-
-.nodes.circle {
-  fill: #f00;
-}
-
-
-.nodes text {
-  pointer-events: none;
-  font: 10px sans-serif;
-}
-
-  /* Make the chart container fill the page using CSS. */
-  #rect {
-    position: fixed;
-    left: 0px;
-    right: 0px;
-    top: 0px;
-    bottom: 0px;
+  @-webkit-keyframes pulsate {
+  0% {opacity: 0.1;}
+  40% {opacity: 1.0;}
+  60% {opacity: 1.0;}
+  100% {opacity: 0.1;}
   }
-
-  #cy {
-    width: 200%;
-    height: 200%;
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    z-index: 999;
-}
-
-
-
-.highlighted {
-      background-color: #61bffc;
-      line-color: #cc0000;
-      target-arrow-color: #cc0000;
-      transition-property: background-color, line-color, target-arrow-color;
-      transition-duration: 0.5s;
-      }
-
-#highlighted {
-        background-color: #61bffc;
-        line-color: #cc0000;
-        target-arrow-color: #cc0000;
-        transition-property: background-color, line-color, target-arrow-color;
-        transition-duration: 0.5s;
-        }
-#node{
-background-color: #90FF33;
-}

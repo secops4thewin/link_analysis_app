@@ -1,10 +1,4 @@
 <form class="splunk-formatter-section" section-label="Vizualization Style">
-	<splunk-control-group label="Theme Color">
-    <splunk-radio-input name="{{VIZ_NAMESPACE}}.theme" value="light">
-    <option value="light">Light</option>
-    <option value="dark">Dark</option>
-	</splunk-radio-input>
-    </splunk-control-group>
     <splunk-control-group label="Layout Style">
     <splunk-select name="{{VIZ_NAMESPACE}}.layoutStyle" value="cose-bilkent">
         <option value="grid">grid</option>
@@ -14,12 +8,12 @@
         <option value="dagre">dagre</option>
         <option value="concentric">concentric</option>
         <option value="breadthfirst">breadthfirst</option>
-
+        <option value="cise">cise</option>
     </splunk-select>
     </splunk-control-group>
     <splunk-control-group label="Path Selection Algorithm">
     <splunk-select name="{{VIZ_NAMESPACE}}.pathAlgo" value="dijkstra">
-        <option value="dijkstra">Dijikstra</option>
+        <option value="dijkstra">dijkstra</option>
         <option value="aStar">aStar</option>
         <option value="floydWarshall">floydWarshall</option>
         <option value="bellmanFord">bellmanFord</option>
@@ -27,25 +21,18 @@
     </splunk-control-group>
     <splunk-control-group label="Path Selection Directed">
     <splunk-radio-input name="{{VIZ_NAMESPACE}}.directed" value="false">
-    <option value="false">False</option>
-    <option value="true">True</option>
+    <option value="false">false</option>
+    <option value="true">true</option>
 	</splunk-radio-input>
     </splunk-control-group>
 </form>
 <form class="splunk-formatter-section" section-label="Vizualization Format">
-    <splunk-control-group label="Fit Viewport">
-        <splunk-radio-input name="{{VIZ_NAMESPACE}}.viewport" value="True">
-            <option value="true">True</option>
-            <option value="false">false</option>
-        </splunk-radio-input>
     </splunk-control-group>
         <splunk-control-group label="Disable Images">
-        <splunk-radio-input name="{{VIZ_NAMESPACE}}.disableImages" value="True">
-            <option value="true">True</option>
+        <splunk-radio-input name="{{VIZ_NAMESPACE}}.disableImages" value="true">
+            <option value="true">true</option>
             <option value="false">false</option>
         </splunk-radio-input>
     </splunk-control-group>
 </form>
-
-disableImages
 
