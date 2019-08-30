@@ -49,47 +49,60 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	  SANKEY Diagram - Used filtering functions
 	  Unique List - https://medium.com/front-end-weekly/getting-unique-values-in-javascript-arrays-17063080f836
+	  SA-devforall - Modal Ideas
 	  */
 	  !(__WEBPACK_AMD_DEFINE_ARRAY__ = [
-	    __webpack_require__(5),
-	    __webpack_require__(16),
-	    __webpack_require__(6),
-	    __webpack_require__(7),
-	    __webpack_require__(8),
-	    __webpack_require__(15),
-	    __webpack_require__(1),
-	    __webpack_require__(18),
-	    __webpack_require__(20),
-	    __webpack_require__(309),
-	    __webpack_require__(311)
-	    // Add required assets to this list
-	  ], __WEBPACK_AMD_DEFINE_RESULT__ = function (
-	    $,
-	    _,
-	    SplunkVisualizationBase,
-	    SplunkVisualizationUtils,
-	    cytoscape,
-	    cxtmenu,
-	    popper,
-	    klay,
-	    dagre,
-	    fcose,
-	    d3,
-	    vizUtils
-	  ) {
+	      __webpack_require__(5),
+	      __webpack_require__(16),
+	      __webpack_require__(6),
+	      __webpack_require__(7),
+	      __webpack_require__(8),
+	      __webpack_require__(15),
+	      __webpack_require__(1),
+	      __webpack_require__(18),
+	      __webpack_require__(20),
+	      __webpack_require__(309),
+	      __webpack_require__(311),
+	      __webpack_require__(312)
+	      // Add required assets to this list
+	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (
+	      $,
+	      _,
+	      SplunkVisualizationBase,
+	      SplunkVisualizationUtils,
+	      cytoscape,
+	      cxtmenu,
+	      fcose,
+	      popper,
+	      dagre,
+	      klay,
+	      d3,
+	      Modal
+	      // Backbone
 
-	    // Load menu extension
-	    cxtmenu(cytoscape);
-	    fcose(cytoscape);
-	    dagre(cytoscape);
-	    popper(cytoscape);
-	    klay(cytoscape);
+	    ) {
 
-	    var preFilter;
-	    var directedGlobal;
-	    var pathAlgoGlobal;
+	      // Load menu extension
+	      cxtmenu(cytoscape);
+	      fcose(cytoscape);
+	      dagre(cytoscape);
+	      popper(cytoscape);
+	      klay(cytoscape);
 
-	    return SplunkVisualizationBase.extend({
+	      // var master = mvc.Components.get('master');
+	      // var modal = new ModalView();
+
+
+	      var preFilter;
+	      var directedGlobal;
+	      var pathAlgoGlobal;
+	      var preRemove;
+	      var initialRun;
+	      var element_preRemove;
+
+
+
+	      return SplunkVisualizationBase.extend({
 
 	        initialize: function () {
 	          SplunkVisualizationBase.prototype.initialize.apply(this, arguments);
@@ -112,25 +125,25 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        _getConfigParams: function (config) {
 	          changedConfig = Object.keys(config)[0];
 	          // If there is only one configuration change (This happens after the first click of formatter menu)
-	          if (Object.keys(config).length == 1){
-	          switch (changedConfig) {
-	            case "display.visualizations.custom.link_analysis_app.link_analysis.layoutStyle":
+	          if (Object.keys(config).length == 1) {
+	            switch (changedConfig) {
+	              case "display.visualizations.custom.link_analysis_app.link_analysis.layoutStyle":
 	                this.layoutStyle = this._getEscapedProperty('layoutStyle', config);
-	              break;
+	                break;
 
-	            case "display.visualizations.custom.link_analysis_app.link_analysis.pathAlgo":
+	              case "display.visualizations.custom.link_analysis_app.link_analysis.pathAlgo":
 	                this.pathAlgo = this._getEscapedProperty('pathAlgo', config);
-	              break;
+	                break;
 
-	            case "display.visualizations.custom.link_analysis_app.link_analysis.disableImages":
+	              case "display.visualizations.custom.link_analysis_app.link_analysis.disableImages":
 	                this.disableImages = SplunkVisualizationUtils.normalizeBoolean(this._getEscapedProperty('disableImages', config));
-	              break;
+	                break;
 
-	            case "display.visualizations.custom.link_analysis_app.link_analysis.directed":
+	              case "display.visualizations.custom.link_analysis_app.link_analysis.directed":
 	                this.directed = SplunkVisualizationUtils.normalizeBoolean(this._getEscapedProperty('directed', config));
-	              break;
+	                break;
 
-	            default:
+	              default:
 	                this.layoutStyle = this._getEscapedProperty('layoutStyle', config) || 'fcose';
 	                this.directed = SplunkVisualizationUtils.normalizeBoolean(this._getEscapedProperty('directed', config), {
 	                  default: false
@@ -140,32 +153,30 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                });
 	                this.pathAlgo = this._getEscapedProperty('pathAlgo', config) || 'dijkstra';
 
-	              break;
+	                break;
+	            }
+	            return;
+	          } else {
+	            this.layoutStyle = this._getEscapedProperty('layoutStyle', config) || 'fcose';
+	            this.directed = SplunkVisualizationUtils.normalizeBoolean(this._getEscapedProperty('directed', config), {
+	              default: false
+	            });
+	            this.disableImages = SplunkVisualizationUtils.normalizeBoolean(this._getEscapedProperty('disableImages', config), {
+	              default: true
+	            });
+	            this.pathAlgo = this._getEscapedProperty('pathAlgo', config) || 'dijkstra';
+	            return;
 	          }
-	          return;
-	        }
-	        else{
-	          //debugger;
-	          this.layoutStyle = this._getEscapedProperty('layoutStyle', config) || 'fcose';
-	          this.directed = SplunkVisualizationUtils.normalizeBoolean(this._getEscapedProperty('directed', config), {
-	            default: false
-	          });
-	          this.disableImages = SplunkVisualizationUtils.normalizeBoolean(this._getEscapedProperty('disableImages', config), {
-	            default: true
-	          });
-	          this.pathAlgo = this._getEscapedProperty('pathAlgo', config) || 'dijkstra';
-	          return;
-	        }
-	          
-	          
+
+
 	        },
 
 	        onConfigChange: function (configChanges, previousConfig) {
 	          // Get Configuration Data
 	          var disableImages_key = "display.visualizations.custom.link_analysis_app.link_analysis.disableImages";
 
-	            // if the previous config is the same as the configured menu item.  Do Nothing.  Handling first time opening the format menu
-	          if( Object.keys(previousConfig).length == 1 && previousConfig["display.visualizations.custom.drilldown"] == "all" && Object.keys(configChanges).length > 1){
+	          // if the previous config is the same as the configured menu item.  Do Nothing.  Handling first time opening the format menu
+	          if (Object.keys(previousConfig).length == 1 && previousConfig["display.visualizations.custom.drilldown"] == "all" && Object.keys(configChanges).length > 1) {
 	            //this._getConfigParams(configChanges);
 	            return;
 	          }
@@ -175,18 +186,10 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            previousConfig["display.visualizations.custom.link_analysis_app.link_analysis.layoutStyle"] == this.layoutStyle.toString() &&
 	            previousConfig[disableImages_key] == undefined) {
 	            return;
-	          }
-	          else if (previousConfig[disableImages_key] == undefined){
+	          } else if (previousConfig[disableImages_key] == undefined) {
 	            return;
 	          }
-	          // if the config changes is the same as the configured menu item.  Do Nothing.  Handling first time opening the format menu
-	          /*
-	          else if (configChanges["display.visualizations.custom.link_analysis_app.link_analysis.directed"] == this.directed.toString() &&
-	            configChanges["display.visualizations.custom.link_analysis_app.link_analysis.pathAlgo"] == this.pathAlgo.toString() &&  
-	            configChanges["display.visualizations.custom.link_analysis_app.link_analysis.layoutStyle"] == this.layoutStyle.toString()) {
-	            return;
-	          }
-	*/
+
 	          // If Config has been updated then re-run invalidateUpdateView()
 	          else {
 	            changedConfig = Object.keys(configChanges)[0];
@@ -196,16 +199,16 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                break;
 
 	              case "display.visualizations.custom.link_analysis_app.link_analysis.pathAlgo":
-	                  pathAlgoGlobal = configChanges["display.visualizations.custom.link_analysis_app.link_analysis.pathAlgo"];
-	                  this._getConfigParams(configChanges);
+	                pathAlgoGlobal = configChanges["display.visualizations.custom.link_analysis_app.link_analysis.pathAlgo"];
+	                this._getConfigParams(configChanges);
 	                break;
 
 	              case "display.visualizations.custom.link_analysis_app.link_analysis.disableImages":
-	                  this.invalidateUpdateView();
+	                this.invalidateUpdateView();
 	                break;
 
 	              case "display.visualizations.custom.link_analysis_app.link_analysis.directed":
-	                
+
 	                directedGlobal = SplunkVisualizationUtils.normalizeBoolean(configChanges["display.visualizations.custom.link_analysis_app.link_analysis.directed"]);
 	                this._getConfigParams(configChanges);
 	                break;
@@ -218,845 +221,1404 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	          }
 	        },
 
-	      // Optionally implement to format data returned from search.
-	      // The returned object will be passed to updateView as 'data'
-	      formatData: function (data, config) {
-	        stringIcon = {};
-	        regexIcon = {};
-	        this.format_info = {};
-	        // Create nodes dictionary for ID creation purposes.
-	        var nodesByName = {};
-	        format_info = {};
-	        // Create an empty group array to allow group assignment
-	        group_list = [];
-	        // Take the first data point
-	        datum = data.rows;
-	        // Create empty array to place all of the nodes in
-	        var nodesArray = [];
+	        // Optionally implement to format data returned from search.
+	        // The returned object will be passed to updateView as 'data'
+	        formatData: function (data, config) {
+	          stringIcon = {};
+	          regexIcon = {};
+	          this.format_info = {};
+	          // Create nodes dictionary for ID creation purposes.
+	          var nodesByName = {};
+	          format_info = {};
+	          // Create an empty group array to allow group assignment
+	          group_list = [];
+	          // Take the first data point
+	          datum = data.rows;
+	          // Create empty array to place all of the nodes in
+	          var nodesArray = [];
 
-	        var linksArray = [];
+	          var linksArray = [];
 
-	        $.ajax({
-	          url: "/static/app/link_analysis_app/icons.csv",
-	          type: 'get',
-	          dataType: "text",
-	          async: false,
-	          success: function (data) {
-	            var csvSplit = data.split('\n');
-	            for (var x = 1; x < csvSplit.length; x++) {
-	              var searchType = csvSplit[x].split(',')[0];
-	              var fieldValue = csvSplit[x].split(',')[1];
-	              var icon = csvSplit[x].split(',')[2];
-	              if (searchType == "string") {
-	                // If the pattern is a string search
-	                stringIcon[fieldValue] = icon;
+	          $.ajax({
+	            url: "/static/app/link_analysis_app/icons.csv",
+	            type: 'get',
+	            dataType: "text",
+	            async: false,
+	            success: function (data) {
+	              var csvSplit = data.split('\n');
+	              for (var x = 1; x < csvSplit.length; x++) {
+	                var searchType = csvSplit[x].split(',')[0];
+	                var fieldValue = csvSplit[x].split(',')[1];
+	                var icon = csvSplit[x].split(',')[2];
+	                if (searchType == "string") {
+	                  // If the pattern is a string search
+	                  stringIcon[fieldValue] = icon;
 
-	              } else if (searchType == "regex") {
-	                // If the pattern is a regex pattern
-	                regexIcon[x] = {
-	                  "fieldValue": fieldValue,
-	                  "icon": icon
+	                } else if (searchType == "regex") {
+	                  // If the pattern is a regex pattern
+	                  regexIcon[x] = {
+	                    "fieldValue": fieldValue,
+	                    "icon": icon
+	                  }
 	                }
 	              }
+	            },
+	            error: function (jqXHR) {
+	              console.log(jqXHR);
 	            }
-	          },
-	          error: function (jqXHR) {
-	            console.log(jqXHR);
-	          }
-	        })
+	          })
 
-	        this.stringIcon = stringIcon;
-	        this.regexIcon = regexIcon;
-	        this._getConfigParams(config);
+	          this.stringIcon = stringIcon;
+	          this.regexIcon = regexIcon;
+	          this._getConfigParams(config);
 
-	        // Update group items
-	        // For each field in the output if the regex matches the pattern variable push it to the columns array
-	        // Set x to 0 so the line numbers match up.
-	        x = 0;
-	        data.fields.forEach(function (column) {
-	          var str = String(column.name);
+	          // Update group items
+	          // For each field in the output if the regex matches the pattern variable push it to the columns array
+	          // Set x to 0 so the line numbers match up.
+	          x = 0;
+	          data.fields.forEach(function (column) {
+	            var str = String(column.name);
 
-	          switch (str) {
-	            case "line_label":
-	              format_info['line_label'] = x;
-	              break;
+	            switch (str) {
+	              case "line_label":
+	                format_info['line_label'] = x;
+	                break;
 
-	            case "line_color":
-	              format_info['line_color'] = x;
-	              break;
+	              case "line_color":
+	                format_info['line_color'] = x;
+	                break;
 
-	            case "line_colour":
-	              format_info['line_color'] = x;
-	              break;
+	              case "line_colour":
+	                format_info['line_color'] = x;
+	                break;
 
-	            case "filter_start":
-	              format_info['filter_start'] = x;
-	              preFilter = data.rows[0][x].toString();
-	              break;
-	            case "filter_end":
-	              format_info['filter_end'] = x;
-	              break;
-	            default:
-	              break;
-	          }
-
-	          x++;
-	        });
-
-	        //For each row in the data push the value of the first and second column into the group_list array.  
-	        // Create an incrementer variable for node id
-	        var n = 0;
-	        datum.forEach(function (link) {
-	          // Create a list of nodes and add to array
-	          nodesArray.push(link[0]);
-	          nodesArray.push(link[1]);
-	          // Add each node to an array so that we can later use it to create dynamic groups for colouring
-	          this.group_list.push({
-	            name: link[0]
-	          });
-	          this.group_list.push({
-	            name: link[1]
-	          });
-	          group_id = 0;
-	          // Create a link object to push the target and source to the linksArray array.
-	          object = {};
-	          object.target = nodeByName(link[0], group_id);
-	          object.source = nodeByName(link[1], group_id);
-	          object.count = link[2];
-	          // Push the nodes to the nodesByName array including a group id of 0.
-	          // Push the object dictionary item from lines above to the linksArray array
-	          linksArray.push(object);
-	        });
-	        // For performance reasons if there is more than 1000 edges don't apply dynamic colours.
-	        if (datum.length < 1000) {
-	          // Perform a group by count by each source address
-	          this.groupCount = d3.nest()
-	            .key(function (d) {
-	              return d.name;
-	            })
-	            .rollup(function (v) {
-
-	              return v.length;
-	            })
-	            .entries(group_list)
-	            .sort(function (a, b) {
-	              return d3.descending(a.value, b.value);
-	            });
-
-	        }
-	        this.format_info = format_info;
-	        this.group_list = group_list;
-	        this.nodesArray = nodesArray;
-	        this.nodesByName = nodesByName;
-	        this.linksArray = linksArray;
-
-	        // Function to check if a node is in the list and push the name and the group
-	        function nodeByName(name, groupId) {
-	          return nodesByName[name] || (nodesByName[name] = {
-	            name: name,
-	            group: groupId
-	          });
-	        }
-	        return data;
-	        // End Format Data Function
-
-	      },
-
-	      // Implement updateView to render a visualization.
-	      // 'data' will be the data object returned from formatData or from the search
-	      // 'config' will be the configuration property object
-	      updateView: function (data, config) {
-
-	        // Guard for empty data
-	        if (data.rows.length < 1) {
-	          return false;
-	        }
-
-	        if (data.fields.length < 2) {
-	          throw new SplunkVisualizationBase.VisualizationError(
-	            'Need at least two columns formatted <src> <dest>'
-	          );
-	        }
-
-	        // Throw warning if there is more than 10,000 rows
-	        /*
-	        if (data.rows.length >10000) {
-	          var message = 'Warning: This visualization renders up to 10,000 data points. Results might be truncated.';
-	          this.el.innerHTML = message;
-	        }
-	        */
-
-	        // Get configuration
-	        this._getConfigParams(config);
-
-	        // Take the first data point
-	        datum = data.rows;
-
-	        // Create nodes dictionary for ID creation purposes.
-	        var nodesByName = this.nodesByName;
-
-	        // Create an array that is used to highlight neighbouring links
-	        var linkedByIndex = {};
-
-	        // Create an empty dictionary for placing the results of the headers in
-	        var headers = {};
-
-	        // Create empty array to place all of the links in
-	        var linksArray = this.linksArray;
-
-	        // Create a variable of x that is 0 to enable iteration
-	        var x = 0;
-
-	        var groupCount = this.groupCount;
-	        // Create variable for line style
-	        var format_info = {};
-
-	        // Create empty array for storing header rows / fields
-	        columns = [];
-
-	        // Create pattern for matching header rows / fields to match nodeXX
-	        var pattern = /node\d{2}$/i;
-
-	        // String Icon Dictionary
-	        var stringIcon = this.stringIcon;
-
-	        // String Icon Dictionary
-	        var regexIcon = this.regexIcon;
-
-	        // Create a color gradient for highlighting groups
-	        var color = d3.scaleOrdinal(d3.schemeCategory20);
-
-	        // Nodes Array
-	        nodesArray = this.nodesArray;
-	        // Path Finding Algo
-	        var start;
-	        var end;
-
-	        // Set Layout Style Global var
-	        layoutStyle_global = this.layoutStyle;
-
-	        // Set Directed Global
-	        directedGlobal = this.directed;
-
-	        // Path Algo Global
-	        pathAlgoGlobal = this.pathAlgo;
-
-	        var width = this.$el.width()
-	        var height = this.$el.height()
-	        // Check to see if cy element exists
-	        var getCy = document.getElementById("cy")
-	        if (getCy == null) {
-	          // Specify a width and height that matches the Splunk console
-	          // Append an SVG Element
-	          var svg = d3.select(this.el)
-	            .append("div")
-	            .attr('width', width)
-	            .attr('height', height)
-	            .attr('id', 'cy')
-	            .attr('active-bg-color', '#555');
-	        }
-
-	        // Add Cytoscape Element
-	        var cy = cytoscape({
-	          container: document.getElementById('cy'),
-	          style: [{
-	            selector: 'node',
-	            style: {
-	              label: 'data(label)'
+	              case "filter_start":
+	                format_info['filter_start'] = x;
+	                preFilter = data.rows[0][x].toString();
+	                break;
+	              case "filter_end":
+	                format_info['filter_end'] = x;
+	                break;
+	              case "remove":
+	                format_info['remove'] = x;
+	                preRemove = data.rows[0][x].toString();
+	                break;
+	              default:
+	                break;
 	            }
-	          }]
-	        });
 
-	        if (groupCount) {
-	          // Return group counts which have a rollup value of greater than 1
-	          var groups = groupCount.filter(function (group) {
-	            return group.value > 1;
-	          });
-	          var z = 1;
-	          groups.forEach(function (groupArrayMember) {
-	            groupArrayMember.group = z;
-	            z++;
+	            x++;
 	          });
 
-	          // For each item in the groups array
-	          groups.forEach(function (groupArrayMember) {
-	            // Return a subset of the linksArray where a group number hasn't been allocated i.e 0
-	            linkGroup = linksArray.filter(function (x) {
-	              return nodesByName[x.source.name].group === 0 || nodesByName[x.target.name].group === 0;
+	          //For each row in the data push the value of the first and second column into the group_list array.
+	          // Create an incrementer variable for node id
+	          var n = 0;
+	          datum.forEach(function (link) {
+	            // Create a list of nodes and add to array
+	            nodesArray.push(link[0]);
+	            nodesArray.push(link[1]);
+	            // Add each node to an array so that we can later use it to create dynamic groups for colouring
+	            this.group_list.push({
+	              name: link[0]
 	            });
-	            // For each item in the linkGroup array
-	            linkGroup.forEach(function (linkGroupArray) {
-	              // If the reduced array group is either the source or target.
-	              if (groupArrayMember.key === linkGroupArray.source.name || groupArrayMember.key === linkGroupArray.target.name) {
-	                // If the group value of the source is 0
-	                if (nodesByName[linkGroupArray.source.name].group === 0) {
-	                  // Set the group value of both the source to group.group
-	                  nodesByName[linkGroupArray.source.name].group = groupArrayMember.group;
-	                }
-	                // If the group value of the target is 0
-	                if (nodesByName[linkGroupArray.target.name].group === 0) {
-	                  // Set the group value of both the target to group.value
-	                  nodesByName[linkGroupArray.target.name].group = groupArrayMember.group;
-	                }
-	              }
+	            this.group_list.push({
+	              name: link[1]
 	            });
+	            group_id = 0;
+	            // Create a link object to push the target and source to the linksArray array.
+	            object = {};
+	            object.target = nodeByName(link[0], group_id);
+	            object.source = nodeByName(link[1], group_id);
+	            object.count = link[2];
+	            // Push the nodes to the nodesByName array including a group id of 0.
+	            // Push the object dictionary item from lines above to the linksArray array
+	            linksArray.push(object);
 	          });
-	        }
-	        // Create a unique list of nodes
-	        const unique = (value, index, self) => {
-	          return self.indexOf(value) === index;
-	        }
-	        nodesUnique = nodesArray.filter(unique);
-
-	        // Create an incrementer variable for node id
-	        var n = 0;
-	        // Foreach unique node add to the node list
-
-	        nodesUnique.forEach(function (node) {
-	          node_id = "n" + n;
-	          nodeById(node, node_id)
-	          node_color = color(nodesByName[node].group);
+	          // For performance reasons if there is more than 1000 edges don't apply dynamic colours.
 	          if (datum.length < 1000) {
-	            nodeIcon = searchIcon(node);
-	          } else {
-	            nodeIcon = ""
+	            // Perform a group by count by each source address
+	            this.groupCount = d3.nest()
+	              .key(function (d) {
+	                return d.name;
+	              })
+	              .rollup(function (v) {
+
+	                return v.length;
+	              })
+	              .entries(group_list)
+	              .sort(function (a, b) {
+	                return d3.descending(a.value, b.value);
+	              });
+
 	          }
-	          cy.add({
-	            data: {
-	              id: node_id,
-	              background: nodeIcon,
-	              weight: 1,
-	              label: node,
-	              color: node_color
-	            }
+	          this.format_info = format_info;
+	          this.group_list = group_list;
+	          this.nodesArray = nodesArray;
+	          this.nodesByName = nodesByName;
+	          this.linksArray = linksArray;
+
+	          // Function to check if a node is in the list and push the name and the group
+	          function nodeByName(name, groupId) {
+	            return nodesByName[name] || (nodesByName[name] = {
+	              name: name,
+	              group: groupId
+	            });
+	          }
+	          return data;
+	          // End Format Data Function
+
+	        },
+
+	        // Implement updateView to render a visualization.
+	        // 'data' will be the data object returned from formatData or from the search
+	        // 'config' will be the configuration property object
+	        updateView: function (data, config) {
+
+	          // Guard for empty data
+	          if (data.rows.length < 1) {
+	            return false;
+	          }
+
+	          if (data.fields.length < 2) {
+	            throw new SplunkVisualizationBase.VisualizationError(
+	              'Need at least two columns formatted <src> <dest>'
+	            );
+	          }
+
+	          // Throw warning if there is more than 10,000 rows
+	          /*
+	          if (data.rows.length >10000) {
+	            var message = 'Warning: This visualization renders up to 10,000 data points. Results might be truncated.';
+	            this.el.innerHTML = message;
+	          }
+	          */
+
+	          // Get configuration
+	          this._getConfigParams(config);
+
+	          // Take the first data point
+	          datum = data.rows;
+
+	          // Create nodes dictionary for ID creation purposes.
+	          var nodesByName = this.nodesByName;
+
+	          // Create an array that is used to highlight neighbouring links
+	          var linkedByIndex = {};
+
+	          // Create an empty dictionary for placing the results of the headers in
+	          var headers = {};
+
+	          // Create empty array to place all of the links in
+	          var linksArray = this.linksArray;
+
+	          // Create a variable of x that is 0 to enable iteration
+	          var x = 0;
+
+	          var groupCount = this.groupCount;
+	          // Create variable for line style
+	          var format_info = {};
+
+	          // Create empty array for storing header rows / fields
+	          columns = [];
+
+	          // Create pattern for matching header rows / fields to match nodeXX
+	          var pattern = /node\d{2}$/i;
+
+	          // String Icon Dictionary
+	          var stringIcon = this.stringIcon;
+
+	          // String Icon Dictionary
+	          var regexIcon = this.regexIcon;
+
+	          // Create a color gradient for highlighting groups
+	          var color = d3.scaleOrdinal(d3.schemeCategory20);
+
+	          // Nodes Array
+	          nodesArray = this.nodesArray;
+	          // Path Finding Algo
+	          var start;
+	          var end;
+
+	          // Set Layout Style Global var
+	          layoutStyle_global = this.layoutStyle;
+
+	          // Set Directed Global
+	          directedGlobal = this.directed;
+
+	          // Path Algo Global
+	          pathAlgoGlobal = this.pathAlgo;
+
+	          var width = this.$el.width()
+	          var height = this.$el.height()
+	          // Check to see if cy element exists
+	          var getCy = document.getElementById("cy")
+	          if (getCy == null) {
+	            // Specify a width and height that matches the Splunk console
+	            // Append an SVG Element
+	            var svg = d3.select(this.el)
+	              .append("div")
+	              .attr('width', width)
+	              .attr('height', height)
+	              .attr('id', 'cy')
+	              .attr('active-bg-color', '#555');
+	          }
+	          /*
+	          modal_main = d3.select("div.main-section-body")
+	            .append("div")
+	            .attr("class","modal hide fade")
+	            .attr("id", "myModal");
+
+	            modal_header = modal_main.append("div")
+	            .attr("class","modal-header");
+	            
+	            modal_header.append("button")
+	            .attr("class","close")
+	            .attr("data-dismiss","modal")
+	            .attr("aria-hidden","true")
+	            .text("testText");
+
+	            modal_header
+	            .append("h3")
+	            .text("Header Text");
+	          
+	            modal_main
+	            .append("div")
+	            .attr("class","modal-body")
+	            .append("p")
+	            .text("paragraph");
+
+
+	            modal_footer =
+	            modal_main
+	            .append("div")
+	            .attr("class","modal-footer");
+
+	            modal_footer
+	            .append("a")
+	            .attr("href", "#")
+	            .attr("class","btn")
+	            .text("Close");
+
+	            modal_footer
+	            .append("a")
+	            .attr("href", "#")
+	            .attr("class","btn btn-primary")
+	            .text("Save");
+
+
+
+	            <div class="modal hide fade" id="myModal">
+	<div class="modal-header">
+	    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+	    <h3>Modal header</h3>
+	</div>
+	<div class="modal-body">
+	    <p>One fine body…</p>
+	</div>
+	<div class="modal-footer">
+	    <a href="#" class="btn">Close</a>
+	    <a href="#" class="btn btn-primary">Save changes</a>
+	</div>
+
+	            .attr("id", "myModal")
+	          d3.select("body").
+	          select("div.main-section-body")
+	            .append("div")
+	            .attr("class", "modal")
+	            .append("div")
+	            .attr("class", "modal-content")
+	            .append("span")
+	            .attr("class", "close-button")
+	            .text("Close")
+	            .append("h1")
+	            .text("Hello world");
+	            var modal = document.querySelector(".modal");
+	            var closeButton = document.querySelector(".close-button");
+
+
+	            <div style="position: relative; top: auto; left: auto; margin: 0 auto 20px; z-index: 1; max-width: 100%;" class="modal">
+	                  <div class="modal-header">
+	                    <button aria-hidden="true" data-dismiss="modal" class="close" type="button">×</button>
+	                    <h3>Modal header</h3>
+	                  </div>
+	                  <div class="modal-body">
+	                    <p>One fine body…</p>
+	                  </div>
+	                  <div class="modal-footer">
+	                    <a class="btn" href="#">Close</a>
+	                    <a class="btn btn-primary" href="#">Save changes</a>
+	                  </div>
+	            </div>
+
+	*/
+
+	          // Add Cytoscape Element
+	          var cy = cytoscape({
+	            container: document.getElementById('cy'),
+	            style: [{
+	              selector: 'node',
+	              style: {
+	                label: 'data(label)'
+	              }
+	            }]
 	          });
-	          n++;
-	        });
 
-	        datum.forEach(function (link) {
-	          // Add nodes to list
-	          source_out = nodesByName[link[0]].id
-	          target_out = nodesByName[link[1]].id
-	          node_data = {
-	            data: {
-	              source: source_out,
-	              target: target_out,
+	          if (groupCount) {
+	            // Return group counts which have a rollup value of greater than 1
+	            var groups = groupCount.filter(function (group) {
+	              return group.value > 1;
+	            });
+	            var z = 1;
+	            groups.forEach(function (groupArrayMember) {
+	              groupArrayMember.group = z;
+	              z++;
+	            });
+
+	            // For each item in the groups array
+	            groups.forEach(function (groupArrayMember) {
+	              // Return a subset of the linksArray where a group number hasn't been allocated i.e 0
+	              linkGroup = linksArray.filter(function (x) {
+	                return nodesByName[x.source.name].group === 0 || nodesByName[x.target.name].group === 0;
+	              });
+	              // For each item in the linkGroup array
+	              linkGroup.forEach(function (linkGroupArray) {
+	                // If the reduced array group is either the source or target.
+	                if (groupArrayMember.key === linkGroupArray.source.name || groupArrayMember.key === linkGroupArray.target.name) {
+	                  // If the group value of the source is 0
+	                  if (nodesByName[linkGroupArray.source.name].group === 0) {
+	                    // Set the group value of both the source to group.group
+	                    nodesByName[linkGroupArray.source.name].group = groupArrayMember.group;
+	                  }
+	                  // If the group value of the target is 0
+	                  if (nodesByName[linkGroupArray.target.name].group === 0) {
+	                    // Set the group value of both the target to group.value
+	                    nodesByName[linkGroupArray.target.name].group = groupArrayMember.group;
+	                  }
+	                }
+	              });
+	            });
+	          }
+	          // Create a unique list of nodes
+	          const unique = (value, index, self) => {
+	            return self.indexOf(value) === index;
+	          }
+	          nodesUnique = nodesArray.filter(unique);
+
+	          // Create an incrementer variable for node id
+	          var n = 0;
+	          // Foreach unique node add to the node list
+
+	          nodesUnique.forEach(function (node) {
+	            node_id = "n" + n;
+	            nodeById(node, node_id)
+	            node_color = color(nodesByName[node].group);
+	            if (datum.length < 1000) {
+	              nodeIcon = searchIcon(node);
+	            } else {
+	              nodeIcon = ""
 	            }
-	          }
+	            cy.add({
+	              data: {
+	                id: node_id,
+	                background: nodeIcon,
+	                weight: 1,
+	                label: node,
+	                color: node_color
+	              }
+	            });
+	            n++;
+	          });
 
-	          if (format_info['line_label']) {
-	            line_label_num = format_info['line_label']
-	            node_data.data.label = link[line_label_num]
-	          }
-	          node_data.data.color = format_info['line_color'] ? node_data.data.color = link[format_info['line_color']] : "#808080"
+	          datum.forEach(function (link) {
+	            // Add nodes to list
+	            source_out = nodesByName[link[0]].id
+	            target_out = nodesByName[link[1]].id
+	            node_data = {
+	              data: {
+	                source: source_out,
+	                target: target_out,
+	              }
+	            }
+	            if (this.format_info['line_label']) {
+	              line_label_num = this.format_info['line_label']
+	              node_data.data.label = link[line_label_num]
+	            }
+	            node_data.data.color = this.format_info['line_color'] ? node_data.data.color = link[this.format_info['line_color']] : "#808080"
 
-	          cy.add(node_data)
+	            cy.add(node_data)
 
-	        });
+	          });
 
-	        // Cytoscape Styling     
-	        cy.style()
-	          .selector('edge')
-	          .style({
-	            'width': 3,
-	            'edge-text-rotation': 'autorotate',
-	            'target-arrow-shape': 'triangle',
-	            'curve-style': 'bezier',
-	            'text-background-color': 'white',
-	            'text-background-opacity': 0.8,
-	            'text-background-shape': 'roundrectangle',
-	            'min-zoomed-font-size': '20',
-	            'text-valign"': 'top',
-	            'text-halign': 'center',
-	            'min-zoomed-font-size': '1',
-	            'control-point-distance': '30px',
-	            'control-point-step-size': 40,
-	            'control-point-weight': '0.5', // '0': curve towards source node, '1': towards target node.
-
-	          })
-	        cy.style()
-	          .selector('core')
-	          .style({
-	            'active-bg-color': '#555',
-	          })
-
-	        if (format_info.line_label) {
+	          // Cytoscape Styling
 	          cy.style()
 	            .selector('edge')
 	            .style({
-	              'label': 'data(label)'
+	              'width': 3,
+	              'edge-text-rotation': 'autorotate',
+	              'target-arrow-shape': 'triangle',
+	              'curve-style': 'bezier',
+	              'text-background-color': 'white',
+	              'text-background-opacity': 0.8,
+	              'text-background-shape': 'roundrectangle',
+	              'min-zoomed-font-size': '20',
+	              'text-valign"': 'top',
+	              'text-halign': 'center',
+	              'min-zoomed-font-size': '1',
+	              'control-point-distance': '30px',
+	              'control-point-step-size': 40,
+	              'control-point-weight': '0.5', // '0': curve towards source node, '1': towards target node.
+
 	            })
-	        }
-	        if (format_info.line_color) {
 	          cy.style()
-	            .selector('edge')
+	            .selector('core')
 	            .style({
-	              'line-color': 'data(color)',
+	              'active-bg-color': '#555',
 	            })
-	        }
 
-	        // Cytoscape Styling     
-	        cy.style()
-	          .selector('node')
-	          .style({
-	            'background-color': 'data(color)',
-	            'min-zoomed-font-size': '20'
-	          })
+	          if (this.format_info.line_label) {
+	            cy.style()
+	              .selector('edge')
+	              .style({
+	                'label': 'data(label)'
+	              })
+	          }
+	          if (this.format_info.line_color) {
+	            cy.style()
+	              .selector('edge')
+	              .style({
+	                'line-color': 'data(color)',
+	              })
+	          }
 
-	        // Node Highlighting
-	        cy.style()
-	          .selector('.nodehighlighted')
-	          .style({
-	            'border-width': 5,
-	            'border-color': 'red',
-	            'width': '60px',
-	            'height': '60px',
-	            'transition-duration': '1s'
-	          });
-
-
-
-	        // Highlighted Class
-	        cy.style()
-	          .selector('.highlighted')
-	          .style({
-	            'background-color': '#61bffc',
-	            'line-color': '#cc0000',
-	            'target-arrow-color': '#cc0000',
-	            'transition-property': 'background-color, line-color, target-arrow-color',
-	            'transition-duration': '0.5s'
-	          }).update();
-
-
-	        // Highlighted Class
-	        if (this.disableImages == false) {
+	          // Cytoscape Styling
 	          cy.style()
 	            .selector('node')
 	            .style({
-	              'background-image': 'data(background)',
-	              'background-fit': 'contain'
+	              'background-color': 'data(color)',
+	              'min-zoomed-font-size': '20'
+	            })
+
+	          // Node Highlighting
+	          cy.style()
+	            .selector('.nodehighlighted')
+	            .style({
+	              'border-width': 5,
+	              'border-color': 'red',
+	              'width': '60px',
+	              'height': '60px',
+	              'transition-duration': '1s'
+	            });
+
+	          cy.style()
+	            .selector('.nodehighlightedchildren')
+	            .style({
+	              'border-width': 5,
+	              'border-color': 'red',
+	              'transition-duration': '1s'
+	            });
+
+
+	          // Highlighted Class
+	          cy.style()
+	            .selector('.highlighted')
+	            .style({
+	              'background-color': '#61bffc',
+	              'line-color': '#cc0000',
+	              'target-arrow-color': '#cc0000',
+	              'transition-property': 'background-color, line-color, target-arrow-color',
+	              'transition-duration': '0.5s'
 	            }).update();
-	        }
-
-	        runLayout(this.layoutStyle)
-
-	        // End Styling
 
 
-	        function runLayout(layoutStyle) {
+	          // Highlighted Class
+	          if (this.disableImages == false) {
+	            cy.style()
+	              .selector('node')
+	              .style({
+	                'background-image': 'data(background)',
+	                'background-fit': 'contain'
+	              }).update();
+	          }
+	          runLayout(this.layoutStyle)
 
-	          // If Prefilter has been configured
-	          if (preFilter) {
-	            if (preFilter.length > 0) {
-	              // If the node exists
-	              if (nodesByName[preFilter].id) {
-	                node_id = "#" + nodesByName[preFilter].id;
-	                highlightCollection = cy.collection(cy.elements().bfs(node_id, 1, directedGlobal).path);
-	                var element_del = cy.elements().not(cy.$(highlightCollection));
+	          // End Styling
+
+
+	          function runLayout(layoutStyle, initialRun = true) {
+
+	            // If Prefilter has been configured
+	            if (preFilter) {
+	              if (initialRun == true) {
+	                if (preFilter.length > 0) {
+	                  // If the node exists
+	                  if (nodesByName[preFilter].id) {
+	                    node_id = "#" + nodesByName[preFilter].id;
+	                    highlightCollection = cy.collection(cy.elements().bfs(node_id, 1, directedGlobal).path);
+	                    var element_del = cy.elements().not(cy.$(highlightCollection));
+	                    // Remove elements
+	                    cy.remove(element_del);
+	                  }
+	                }
+	              }
+	            }
+	            if (preRemove && initialRun == true) {
+
+	              if (preRemove.length > 0) {
+	                if (nodesByName[preRemove].id) {
+	                  var initialRun = false;
+
+	                  node_id = "#" + nodesByName[preRemove].id;
+	                  initial_node = cy.$(node_id);
+	                  successor_preRemove = initial_node.successors()
+	                  predecessor_preRemove = initial_node.predecessors()
+	                  jointNodes_preRemove = successor_preRemove.union(predecessor_preRemove);
+	                  nodesByName[preRemove].children = jointNodes_preRemove;
+
+	                  // Delete the rest and push the element_preRemove to a variable that can be used later for adding back in a compute efficient way.
+	                  element_preRemove = cy.$().not(cy.$(node_id));
+
+	                  // Iterate through nodes and add predecessors and successors to the nodeByName array
+	                  for (var x = 0; x < element_preRemove.length; x++) {
+	                    if (element_preRemove[x].successors().length > 1 || element_preRemove[x].predecessors().length > 1) {
+	                      var successor_preRemove = element_preRemove[x].successors()
+	                      var predecessor_preRemove = element_preRemove[x].predecessors()
+	                      var jointNodes_preRemove = successor_preRemove.union(predecessor_preRemove);
+	                      node_id = "#" + element_preRemove[x].id();
+	                      node_label = cy.$(node_id).data('label');
+	                      if (nodesByName[node_label]) {
+	                        nodesByName[node_label].children = jointNodes_preRemove
+	                      }
+
+	                    }
+	                  }
+
+	                  // Remove elements
+	                  cy.remove(element_preRemove);
+	                }
+	              }
+	            }
+
+	            var fcoseOptions = {
+	              stop: function () {
+	                cy.removeAllListeners();
+	                launchPostProcess();
+	              },
+	              name: layoutStyle,
+	              quality: "proof",
+	              // number of ticks per frame; higher is faster but more jerky
+	              //refresh: 300,
+	              // Whether to enable incremental mode
+	              //randomize: true,
+	              // Type of layout animation. The option set is {'during', 'end', false}
+	              animate: false,
+	              fit: false,
+	              // For enabling tiling
+	              tile: true,
+
+	              hideEdgesOnViewport: true,
+	              hideLabelsOnViewport: true,
+	              // interpolate on high density displays instead of increasing resolution
+	              pixelRatio: 1,
+	              // a motion blur effect that increases perceived performance for little or no cost
+	              motionBlur: true,
+	              nodeDimensionsIncludeLabels: true,
+
+
+	            };
+
+
+	            var coseBilkentOptions = {
+	              stop: function () {
+	                cy.removeAllListeners();
+	                launchPostProcess();
+	              },
+	              name: layoutStyle,
+	              // number of ticks per frame; higher is faster but more jerky
+	              //refresh: 300,
+	              // Whether to enable incremental mode
+	              //randomize: true,
+	              // Type of layout animation. The option set is {'during', 'end', false}
+	              animate: false,
+	              fit: true,
+
+	              hideEdgesOnViewport: true,
+	              hideLabelsOnViewport: true,
+	              // interpolate on high density displays instead of increasing resolution
+	              pixelRatio: 1,
+	              // a motion blur effect that increases perceived performance for little or no cost
+	              motionBlur: true
+	            };
+
+	            switch (layoutStyle) {
+	              case "fcose":
+	                cy.layout(fcoseOptions).run();
+	                break;
+	              case "cose-bilkent":
+	                cy.layout(coseBilkentOptions).run();
+	                break;
+
+	              default:
+	                cy.layout({
+	                  stop: function () {
+	                    cy.removeAllListeners();
+	                    launchPostProcess();
+	                  },
+	                  name: layoutStyle,
+	                  nodeDimensionsIncludeLabels: true,
+	                  // Performance Options
+	                  hideEdgesOnViewport: true,
+	                  hideLabelsOnViewport: true,
+	                  // interpolate on high density displays instead of increasing resolution
+	                  pixelRatio: 1,
+	                  // a motion blur effect that increases perceived performance for little or no cost
+	                  motionBlur: true
+	                }).run();
+	                break;
+	            }
+	          }
+
+	          function launchPostProcess() {
+	            let boxedNodes = cy.collection();
+	            let elemsWChildren = cy.collection();
+	            if (preRemove) {
+	              cy.$(cy.elements()).removeClass('nodehighlightedchildren');
+	              cy.on('tap', 'node', function (evt) {
+	                node_id = "#" + evt.target.id();
+	                node_label = cy.$(node_id).data('label');
+	                if (nodesByName[node_label].children && nodesByName[node_label].children.length > 0 && nodesByName[node_label].children.difference(cy.elements()).length > 0) {
+	                  var diff_nodes = nodesByName[node_label].children.difference(cy.elements());
+	                  cy.add(diff_nodes);
+	                  runLayout(layoutStyle_global, false);
+	                }
+
+	              });
+	              for (var x = 0; x < cy.elements().length; x++) {
+	                if (nodesByName[cy.elements()[x].data('label')] && nodesByName[cy.elements()[x].data('label')].children.length > 0 && nodesByName[cy.elements()[x].data('label')].children.difference(cy.elements())) {
+	                  if (nodesByName[cy.elements()[x].data('label')].children.difference(cy.elements()).length > 0) {
+	                    elemsWChildren = elemsWChildren.union(cy.elements()[x]);
+	                  }
+	                }
+	              }
+	              cy.$(elemsWChildren).addClass('nodehighlightedchildren')
+	            }
+
+	            // Create a Datalist for the search nodes
+	            var nodeListDataList = document.createElement("datalist");
+	            nodeListDataList.setAttribute("id", "node_list");
+	            document.body.appendChild(nodeListDataList);
+
+	            // Add nodes to list
+	            var list = document.getElementById('node_list');
+	            nodesUnique.forEach(function (node) {
+	              var option = document.createElement('option');
+	              option.value = node;
+	              list.appendChild(option);
+	            });
+
+
+
+	            // Create a list element
+	            var menuDataList = document.createElement("datalist");
+	            menuDataList.setAttribute("id", "menu_list");
+	            document.body.appendChild(menuDataList);
+
+	            // Add Menu Items
+	            menu_list_items = ['Delete Highlighted Items', 'Delete Non-Highlighted Items', 'Refresh', 'Clear Formatting', 'Save State'];
+	            menu_list_items = menu_list_items.sort()
+	            var list = document.getElementById('menu_list');
+	            menu_list_items.forEach(function (item) {
+	              var option = document.createElement('option');
+	              option.value = item;
+	              list.appendChild(option);
+	            });
+
+
+	            // Add box highlight function
+	            cy.on('box', function (e) {
+	              let node = e.target;
+	              boxedNodes = boxedNodes.union(node);
+	              boxedNodes.addClass('highlighted');
+	            });
+
+	            // Begin - Add Menu for nodes and background
+	            cy.cxtmenu({
+	              selector: 'node, edge',
+	              commands: [{
+	                  content: 'Collapse',
+	                  select: function (ele) {
+	                    apiCollapse.collapseRecursively(ele);
+	                  },
+	                  enabled: true
+	                },
+	                {
+	                  content: 'Modal',
+	                  select: function (ele) {
+	                    toggleModal();
+	                    closeButton.addEventListener("click", toggleModal);
+	                    window.addEventListener("click", windowOnClick);
+	                  },
+	                  enabled: true
+	                },
+	                {
+	                  content: "Single Path Select",
+	                  select: function (ele) {
+	                    if (start) {
+	                      end = ele.id();
+	                      highlightNextEle(start, end);
+	                    } else {
+	                      start = ele.id();
+	                      cy.getElementById(start).addClass('highlighted')
+	                    };
+	                  }
+	                },
+	                {
+	                  content: "Hlt All Paths",
+	                  select: function (ele) {
+	                    start = ele.id();
+	                    n_predecessors = ele.predecessors()
+	                    n_successors = ele.successors()
+	                    jointNodes = n_predecessors.union(n_successors);
+	                    jointNodes.addClass('highlighted')
+	                  }
+	                }
+
+	              ]
+	            });
+	            cy.cxtmenu({
+	              selector: 'core',
+	              commands: [
+	                /*{
+	                                  content: 'Clear Fmt',
+	                                  select: function (ele) {
+	                                    start = undefined;
+	                                    end = undefined;
+	                                    cy.elements().removeClass('highlighted');
+
+	                                  },
+	                                },
+	                                {
+	                                  content: 'Del Hltd',
+	                                  select: function (ele) {
+	                                    cy.remove(boxedNodes);
+	                                    var element_del = cy.elements(cy.$('.highlighted'));
+	                                    // Remove elements
+	                                    cy.remove(element_del);
+
+	                                  },
+	                                },
+	                                {
+	                                  content: 'Del Non Hltd',
+	                                  select: function (ele) {
+	                                    // Select all elements that are not highligted
+	                                    var element_del = cy.elements().not(cy.$('.highlighted'));
+	                                    // Remove elements
+	                                    cy.remove(element_del);
+	                                  },
+	                                },*/
+	                {
+	                  content: 'Search NodesN',
+	                  select: function () {
+	                    // Now we initialize the Modal itself
+	                    var myModal = new Modal("modal1", {
+	                      title: "Search Nodes",
+	                      backdrop: 'static',
+	                      keyboard: false,
+	                      destroyOnHide: true,
+	                      type: 'normal'
+	                    });
+	                    /*
+	                    $(myModal.$el).on("hide", function() {
+	                    })*/
+	                    myModal.body
+	                      .append($('<p>Use the search menu to find and zoom into a node.</p>'));
+
+	                    myModal.body
+	                      .append($('<input>').attr({
+	                        'name': 'node_search',
+	                        'id': 'node_search',
+	                        'type': 'text',
+	                        'list': 'node_list',
+	                        'style': 'z-index:9999'
+	                      }));
+
+	                    myModal.footer.append($('<button>').attr({
+	                      type: 'button',
+	                      'data-dismiss': 'modal'
+	                    }).addClass('btn btn-primary').text('Search').on('click', function () {
+	                      // Do Nothing Function
+	                      searchNodes();
+
+	                    }))
+	                    myModal.show(); // Launch it!
+	                  },
+	                },
+	                /*{
+	                  content: 'Search',
+	                  select: function (ele) {
+	                    // create a basic popper on the core
+	                    let popper2 = cy.popper({
+	                      content: () => {
+	                        // Create an input box
+	                        var x = document.createElement("input");
+	                        x.setAttribute("name", "node_search");
+	                        x.setAttribute("id", "node_search");
+	                        x.setAttribute("type", "text");
+	                        x.setAttribute("list", "node_list");
+	                        x.setAttribute("style", "z-index:9999")
+	                        x.addEventListener("keydown", function (e) {
+	                          if (!e) {
+	                            var e = window.event;
+	                          }
+	                          // Enter is pressed
+	                          if (e.keyCode == 13) {
+	                            e.preventDefault(); // sometimes useful
+	                            searchNodes();
+	                          }
+	                        }, false);;
+	                        document.body.appendChild(x);
+
+	                        // Create a list element
+	                        var y = document.createElement("datalist");
+	                        y.setAttribute("id", "node_list");
+	                        document.body.appendChild(y);
+
+	                        // Add nodes to list
+	                        var list = document.getElementById('node_list');
+	                        nodesUnique.forEach(function (node) {
+	                          var option = document.createElement('option');
+	                          option.value = node;
+	                          list.appendChild(option);
+	                        });
+	                        return x;
+	                      },
+	                      renderedPosition: () => ({
+	                        x: 10,
+	                        y: 10
+	                      }),
+	                      popper: {
+
+	                      } // my popper options here
+	                    });
+	                  },
+	                },*/
+	                {
+	                  content: 'Menu',
+	                  select: function (ele) {
+	                    // Now we initialize the Modal itself
+	                    var myModal = new Modal("modal1", {
+	                      title: "Menu",
+	                      backdrop: 'static',
+	                      keyboard: false,
+	                      destroyOnHide: true,
+	                      type: 'normal'
+	                    });
+	                    /*
+	                    $(myModal.$el).on("hide", function() {
+	                    })*/
+	                    myModal.body
+	                      .append($('<p>Select from the list of available functions.</p>'));
+
+	                    myModal.body
+	                      .append($('<input>').attr({
+	                        'name': 'menu_select',
+	                        'id': 'menu_select',
+	                        'type': 'text',
+	                        'list': 'menu_list',
+	                        'style': 'z-index:9999'
+	                      }).addClass('table table-striped table-hover'));
+
+	                    myModal.footer.append($('<button>').attr({
+	                      type: 'button',
+	                      'data-dismiss': 'modal'
+	                    }).addClass('btn btn-primary').text('Select').on('click', function () {
+	                      // Do Nothing Function  
+	                      x = document.getElementById('menu_select')
+	                      returnMenu(ele, x);
+
+	                    }))
+	                    myModal.show(); // Launch it!
+	                  },
+	                },
+
+	              ]
+	            });
+
+	            // Set Min Zoom / Max Zoom
+	            cy.minZoom(0.05);
+	            cy.maxZoom(1.5);
+
+	            if (preFilter) {
+	              node_id = "#" + nodesByName[preFilter].id;
+	              cy.fit(node_id);
+	            } else if (preRemove && initialRun == true) {
+	              node_id = "#" + nodesByName[preRemove].id;
+	              cy.fit(node_id);
+	            } else if (initialRun == false) {
+	              // Do nothing routine
+	              pass
+	            } else {
+	              cy.fit()
+	            }
+
+
+	          }
+
+	          // End - Add Menu for nodes and background
+
+
+	          function searchNodes(ele) {
+	            document.getElementById("node_search").value;
+	            var node_value = document.getElementById("node_search").value;
+	            if (nodesByName[node_value]) {
+	              node_id = "#" + nodesByName[node_value].id;
+	              // Set the zoom level
+	              cy.zoom(1);
+	              // Center on the node
+	              cy.center(node_id);
+	              // Adjust view to ensure that the node is ~ centre
+	              cy.$(node_id).flashClass('nodehighlighted', 2500);
+
+	            }
+	            // Delete the search box
+	            var element = document.getElementById('node_search');
+	            element.parentNode.removeChild(element);
+	            var data_node_list = document.getElementById("node_list");
+	            data_node_list.remove(data_node_list);
+
+	          }
+
+	          // Begin - Path Highlighting Function
+
+	          function highlightNextEle(start_id, end_id) {
+	            // Highlight Elements
+	            startid_hash = "#" + start_id
+	            endid_hash = "#" + end_id
+	            switch (pathAlgoGlobal) {
+
+	              case "dijkstra":
+	                // code block
+	                var dijkstra = cy.elements().dijkstra(startid_hash, function (eles) {
+	                  return 1
+	                }, directedGlobal);
+	                var djs = dijkstra.pathTo(endid_hash);
+
+	                for (var x = 0; x < djs.length; x++) {
+	                  var el = djs[x];
+	                  el.addClass('highlighted');
+	                }
+	                break;
+
+	              case "aStar":
+	                // code block
+	                var aStar = cy.elements().aStar({
+	                  root: startid_hash,
+	                  goal: endid_hash,
+	                  directed: directedGlobal
+	                });
+	                for (var x = 0; x < aStar.path.length; x++) {
+	                  var el = aStar.path[x];
+	                  el.addClass('highlighted');
+	                }
+	                break;
+
+	              case "floydWarshall":
+	                // code block
+	                var fw = cy.elements().floydWarshall();
+	                fw_collection = fw.path(startid_hash, endid_hash)
+	                for (var x = 0; x < fw_collection.length; x++) {
+	                  var el = fw_collection[x];
+	                  el.addClass('highlighted');
+	                }
+	                break;
+	              case "bellmanFord":
+	                // code block
+	                var bellmanFord = cy.elements().bellmanFord({
+	                  root: startid_hash,
+	                  directed: directedGlobal
+	                });
+	                var djs = bellmanFord.pathTo(endid_hash);
+	                for (var x = 0; x < djs.length; x++) {
+	                  var el = djs[x];
+	                  el.addClass('highlighted');
+	                }
+	                break;
+
+	              default:
+	                // code block
+	                var dijkstra = cy.elements().dijkstra(startid_hash, function (eles) {
+	                  return 1
+	                }, directedGlobal);
+	                var djs = dijkstra.pathTo(endid_hash);
+
+	                for (var x = 0; x < djs.length; x++) {
+	                  var el = djs[x];
+	                  el.addClass('highlighted');
+	                }
+	                break;
+	            }
+	            start = undefined;
+	            end = undefined;
+	          }
+
+	          // End - Single Path Highlighting Function
+
+	          // Begin - Higlight All Paths From.
+	          function highlightAllPathsFrom(start_node) {
+	            start_node = "#" + start_node;
+	            var bfs = cy.elements().bfs(start_node, 1, directedGlobal);
+	            for (var x = 0; x < bfs.path.length; x++) {
+	              var el = bfs.path[x];
+	              el.addClass('highlighted');
+	            }
+
+	          }
+	          // End Higlight All Nodes between path.
+
+	          // Debounce Function for improved performance
+	          function debounce(func, wait, immediate) {
+	            var timeout;
+	            return function () {
+	              var context = this,
+	                args = arguments;
+	              var later = function () {
+	                timeout = null;
+	                if (!immediate) func.apply(context, args);
+	              };
+	              var callNow = immediate && !timeout;
+	              clearTimeout(timeout);
+	              timeout = setTimeout(later, wait);
+	              if (callNow) func.apply(context, args);
+	            };
+	          };
+
+	          function nodeById(name, node_id) {
+	            return nodesByName[name].id || (nodesByName[name].id = node_id);
+	          }
+
+	          // Search Icon Function
+	          function searchIcon(searchFieldValue) {
+	            // If there is a direct match for the field value
+	            if (stringIcon[searchFieldValue]) {
+	              return stringIcon[searchFieldValue]
+	            }
+	            // Iterate through regexes to try and match the string
+	            else if (regexIcon) {
+	              // For each regex in list
+	              for (i = 0; i < Object.keys(regexIcon).length + 1; i++) {
+	                // Check if regex is valid if not throw message
+
+	                if (regexIcon[i]) {
+	                  try {
+	                    var re = RegExp(regexIcon[i].fieldValue);
+	                  } catch (e) {
+	                    throw new SplunkVisualizationBase.VisualizationError(
+	                      'Invalid Regex of ' + escapeHtml(regexIcon[i].fieldValue))
+	                  }
+
+	                  // Check if the regex matches
+	                  if (re.test(searchFieldValue)) {
+	                    // If so return the icon
+	                    return regexIcon[i].icon
+	                  }
+	                } else {
+	                  return "/static/app/link_analysis_app/default.png"
+	                }
+	              }
+	            } else {
+	              // No matches so return a default image.
+	              return "/static/app/link_analysis_app/default.png"
+	            }
+	          }
+
+	          function returnMenu(ele, x) {
+
+	            switch (x.value) {
+	              case "Delete Highlighted Items":
+	                // // deleteElement('menu_list')
+	                deleteElement('menu_select')
+	                cy.remove(boxedNodes);
+	                var element_del = cy.elements(cy.$('.highlighted'));
 	                // Remove elements
 	                cy.remove(element_del);
-	              }
+	                break;
+
+	              case "Delete Non-Highlighted Items":
+	                // deleteElement('menu_list')
+	                deleteElement('menu_select')
+	                // Select all elements that are not highligted
+	                var element_del = cy.elements().not(cy.$('.highlighted'));
+	                // Remove elements
+	                cy.remove(element_del);
+
+	                break;
+
+	              case "Refresh":
+	                // deleteElement('menu_list')
+	                deleteElement('menu_select')
+	                runLayout(layoutStyle_global, false);
+	                break;
+
+	              case "Search":
+	                // deleteElement('menu_list')
+	                deleteElement('menu_select')
+
+	                break;
+
+	              case "Clear Formatting":
+	                // deleteElement('menu_list')
+	                deleteElement('menu_select')
+	                start = undefined;
+	                end = undefined;
+	                cy.elements().removeClass('highlighted');
+	                break;
+
+	              case "Save State":
+	                // deleteElement('menu_list')
+	                deleteElement('menu_select')
+
+	                // Create Modal for HTTP Save State
+	                var myModal = new Modal("modal1", {
+	                  title: "Save State",
+	                  backdrop: 'static',
+	                  keyboard: false,
+	                  destroyOnHide: true,
+	                  type: 'normal'
+	                });
+	                /*
+	                $(myModal.$el).on("hide", function() {
+	                })*/
+	                myModal.body
+	                  .append($('<p>This menu allows you to save state of your diagram</p>'));
+
+
+	                  myModal.body
+	                  .append($('<h4>HTTP Event Code</h4>'));
+	                myModal.body
+	                  .append($('<input type="text" id="http_event_code" name="http_event_code" required>'));
+
+	                  myModal.body
+	                  .append($('<h4>HTTP Destination</h4>'));
+	                myModal.body
+	                  .append($('<input type="text" id="http_destination" name="http_destination" value="https://yoursplunkserver.com:8089/services/collector" required>'));
+
+	                  myModal.body
+	                  .append($('<h4>Description</h4>'));
+	                myModal.body
+	                  .append($('<input type="text" id="http_description" name="http_description" value="This graph shows ...." required>'));
+
+
+	                myModal.footer.append($('<button>').attr({
+	                  type: 'button',
+	                  'data-dismiss': 'modal'
+	                }).addClass('btn btn-primary').text('Submit').on('click', function (modalEle) {
+	                  // Post to HEC 
+	                  debugger; 
+	                  var description = document.getElementById("http_description").value;
+	                  var http_event_code = document.getElementById("http_event_code").value;
+	                  var http_destination = document.getElementById("http_destination").value;
+	                  httpRequest(http_destination, http_event_code, cy.json(), description);
+
+	                }))
+	                myModal.show(); // Launch it!
+
+	/*
+	                let hec_popper_msg = cy.popper({
+	                  content: () => {
+	                    // Create an input box
+	                    var x = document.createElement("input");
+	                    x.setAttribute("name", "hec_code");
+	                    x.setAttribute("id", "hec_code");
+	                    x.setAttribute("type", "text");
+	                    x.setAttribute("style", "z-index:9999")
+	                    document.body.appendChild(x);
+	                    return x;
+	                  },
+	                  renderedPosition: () => ({
+	                    x: 10,
+	                    y: 10
+	                  }),
+	                  popper: {}
+	                });
+
+	                let hec_popper_para = cy.popper({
+	                  content: () => {
+	                    // Create an input box
+	                    var para = document.createElement("p");
+	                    node = document.createTextNode("HEC Code.");
+	                    para.setAttribute("id", "hec_para_desc");
+	                    para.setAttribute("style", "z-index:9999")
+	                    para.appendChild(node);
+	                    document.body.appendChild(para);
+	                    return para;
+	                  },
+	                  renderedPosition: () => ({
+	                    x: 250,
+	                    y: 15
+	                  }),
+	                  popper: {}
+	                });
+
+	                let url_popper = cy.popper({
+	                  content: () => {
+	                    // Create an input box
+	                    var x = document.createElement("input");
+	                    x.setAttribute("name", "url_code");
+	                    x.setAttribute("id", "url_code");
+	                    x.setAttribute("type", "text");
+	                    x.setAttribute("style", "z-index:9999")
+	                    document.body.appendChild(x);
+	                    return x;
+	                  },
+	                  renderedPosition: () => ({
+	                    x: 10,
+	                    y: 60
+	                  }),
+	                  popper: {}
+	                });
+
+	                let url_popper_para = cy.popper({
+	                  content: () => {
+	                    // Create an input box
+	                    var para = document.createElement("p");
+	                    node = document.createTextNode("Splunk HEC Server URL.");
+	                    para.setAttribute("id", "url_para_desc");
+	                    para.setAttribute("style", "z-index:9999")
+	                    para.appendChild(node);
+	                    document.body.appendChild(para);
+	                    return para;
+	                  },
+	                  renderedPosition: () => ({
+	                    x: 290,
+	                    y: 60
+	                  }),
+	                  popper: {}
+	                });
+
+	                let submit_button = cy.popper({
+	                  content: () => {
+	                    // Create an input box
+	                    var btn = document.createElement("BUTTON");
+	                    btn.setAttribute("style", "z-index:9999")
+	                    btn.setAttribute("id", "submit_button")
+	                    btn.innerHTML = "Submit";
+	                    document.body.appendChild(btn);
+	                    btn.addEventListener("click", function () {
+	                      httpRequest()
+	                    });
+	                    return btn;
+	                  },
+	                  renderedPosition: () => ({
+	                    x: 10,
+	                    y: 100
+	                  }),
+	                  popper: {}
+	                });
+
+	                let close_button = cy.popper({
+	                  content: () => {
+	                    // Create an input box
+	                    var btn = document.createElement("BUTTON");
+	                    btn.setAttribute("style", "z-index:9999")
+	                    btn.setAttribute("id", "close_button")
+	                    btn.innerHTML = "Submit";
+	                    document.body.appendChild(btn);
+	                    btn.addEventListener("click", function () {
+	                      deleteElement('close_button')
+	                      deleteElement('submit_button')
+	                      deleteElement('url_para_desc')
+	                      deleteElement('url_code')
+	                      deleteElement('hec_para_desc')
+	                      deleteElement('hec_code')
+	                    });
+	                    return btn;
+	                  },
+	                  renderedPosition: () => ({
+	                    x: 10,
+	                    y: 100
+	                  }),
+	                  popper: {}
+	                });
+	*/
+	  
+
+	                break;
+
+	              case "Close":
+	                // deleteElement('menu_list')
+	                deleteElement('menu_select')
+	                break;
+
+	              default:
+	                // deleteElement('menu_list')
+	                deleteElement('menu_select')
+	                // Do nothing
+
+	                break;
+
 	            }
 	          }
 
-
-	          var fcoseOptions = {
-	            stop: function () {
-	              cy.removeAllListeners();
-	              launchPostProcess();
-	            },
-	            name: layoutStyle,
-	            // number of ticks per frame; higher is faster but more jerky
-	            //refresh: 300,
-	            // Whether to enable incremental mode
-	            //randomize: true,
-	            // Type of layout animation. The option set is {'during', 'end', false}
-	            animate: false,
-	            fit: true,
-
-	            hideEdgesOnViewport: true,
-	            hideLabelsOnViewport: true,
-	            // interpolate on high density displays instead of increasing resolution
-	            pixelRatio: 1,
-	            // a motion blur effect that increases perceived performance for little or no cost
-	            motionBlur: true
-	          };
-
-
-	          var coseBilkentOptions = {
-	            stop: function () {
-	              cy.removeAllListeners();
-	              launchPostProcess();
-	            },
-	            name: layoutStyle,
-	            // number of ticks per frame; higher is faster but more jerky
-	            //refresh: 300,
-	            // Whether to enable incremental mode
-	            //randomize: true,
-	            // Type of layout animation. The option set is {'during', 'end', false}
-	            animate: false,
-	            fit: true,
-
-	            hideEdgesOnViewport: true,
-	            hideLabelsOnViewport: true,
-	            // interpolate on high density displays instead of increasing resolution
-	            pixelRatio: 1,
-	            // a motion blur effect that increases perceived performance for little or no cost
-	            motionBlur: true
-	          };
-
-	          switch (layoutStyle) {
-	            case "fcose":
-	              cy.layout(fcoseOptions).run();
-	              break;
-	            case "cose-bilkent":
-	              cy.layout(coseBilkentOptions).run();
-	              break;
-
-	            default:
-	              cy.layout({
-	                stop: function () {
-	                  cy.removeAllListeners();
-	                  launchPostProcess();
-	                  cy.on('tap', function (event) {
-	                    // target holds a reference to the originator
-	                    // of the event (core or element)
-	                    var evtTarget = event.target;
-	                  });
-	                },
-	                name: layoutStyle,
-	                nodeDimensionsIncludeLabels: true,
-	                // Performance Options
-	                hideEdgesOnViewport: true,
-	                hideLabelsOnViewport: true,
-	                // interpolate on high density displays instead of increasing resolution
-	                pixelRatio: 1,
-	                // a motion blur effect that increases perceived performance for little or no cost
-	                motionBlur: true
-	              }).run();
-	              break;
-	          }
-	        }
-
-	        function launchPostProcess() {
-	          let boxedNodes = cy.collection();
-
-	          // Add box highlight function
-	          cy.on('box', function (e) {
-	            let node = e.target;
-	            boxedNodes = boxedNodes.union(node);
-	            boxedNodes.addClass('highlighted');
-	          });
-
-	          // Begin - Add Menu for nodes and background
-	          cy.cxtmenu({
-	            selector: 'node, edge',
-	            commands: [{
-	                content: 'Placeholder',
-	                select: function (ele) {},
-	                enabled: false
-	              },
-	              {
-	                content: 'PlaceholderN',
-	                select: function (ele) {},
-	                enabled: true
-
-	              },
-	              {
-	                content: "Single Path Select",
-	                select: function (ele) {
-	                  if (start) {
-	                    end = ele.id();
-	                    highlightNextEle(start, end);
-	                  } else {
-	                    start = ele.id();
-	                    cy.getElementById(start).addClass('highlighted')
-	                  };
-	                }
-	              },
-	              {
-	                content: "Highlight All Paths",
-	                select: function (ele) {
-	                  start = ele.id();
-	                  highlightAllPathsFrom(start);
-	                }
-	              }
-
-	            ]
-	          });
-	          cy.cxtmenu({
-	            selector: 'core',
-	            commands: [{
-	                content: 'Clear Paths',
-	                select: function (ele) {
-	                  start = undefined;
-	                  end = undefined;
-	                  cy.elements().removeClass('highlighted');
-	                },
-	              },
-	              {
-	                content: 'Delete Highlighted Items',
-	                select: function (ele) {
-	                  cy.remove(boxedNodes);
-	                  var element_del = cy.elements(cy.$('.highlighted'));
-	                  // Remove elements
-	                  cy.remove(element_del);
-
-	                },
-	              },
-	              {
-	                content: 'Delete Non Highlighted Nodes',
-	                select: function (ele) {
-	                  // Select all elements that are not highligted
-	                  var element_del = cy.elements().not(cy.$('.highlighted'));
-	                  // Remove elements
-	                  cy.remove(element_del);
-	                },
-	              },
-	              {
-	                content: 'Refresh',
-	                select: function () {
-	                  runLayout(layoutStyle_global);
-	                },
-	              },
-	              {
-	                content: 'Search',
-	                select: function (ele) {
-	                  // create a basic popper on the core
-	                  let popper2 = cy.popper({
-	                    content: () => {
-	                      // Create an input box
-	                      var x = document.createElement("input");
-	                      x.setAttribute("name", "node_search");
-	                      x.setAttribute("id", "node_search");
-	                      x.setAttribute("type", "text");
-	                      x.setAttribute("list", "node_list");
-	                      x.setAttribute("style", "z-index:9999")
-	                      x.addEventListener("keydown", function (e) {
-	                        if (!e) {
-	                          var e = window.event;
-	                        }
-	                        // Enter is pressed
-	                        if (e.keyCode == 13) {
-	                          e.preventDefault(); // sometimes useful
-	                          searchNodes();
-	                        }
-	                      }, false);;
-	                      document.body.appendChild(x);
-
-	                      // Create a list element
-	                      var y = document.createElement("datalist");
-	                      y.setAttribute("id", "node_list");
-	                      document.body.appendChild(y);
-
-	                      // Add nodes to list
-	                      var list = document.getElementById('node_list');
-	                      nodesUnique.forEach(function (node) {
-	                        var option = document.createElement('option');
-	                        option.value = node;
-	                        list.appendChild(option);
-	                      });
-	                      return x;
-	                    },
-	                    renderedPosition: () => ({
-	                      x: 10,
-	                      y: 10
-	                    }),
-	                    popper: {
-
-	                    } // my popper options here
-	                  });
-	                },
-	              },
-
-	            ]
-	          });
-
-	          // Set Min Zoom / Max Zoom
-	          cy.minZoom(0.16);
-	          cy.maxZoom(1.5);
-	          cy.fit()
-
-	        }
-
-	        // End - Add Menu for nodes and background
-
-
-	        function searchNodes(ele) {
-	          document.getElementById("node_search").value;
-	          var node_value = document.getElementById("node_search").value;
-	          if (nodesByName[node_value]) {
-	            node_id = "#" + nodesByName[node_value].id;
-	            // Set the zoom level
-	            cy.zoom(1);
-	            // Center on the node
-	            cy.center(node_id);
-	            // Adjust view to ensure that the node is ~ centre
-	            cy.$(node_id).flashClass('nodehighlighted', 2500);
-
-	          }
-	          // Delete the search box
-	          var element = document.getElementById('node_search');
-	          element.parentNode.removeChild(element);
-
-	        }
-
-	        // Begin - Path Highlighting Function
-
-	        function highlightNextEle(start_id, end_id) {
-	          // Highlight Elements
-	          startid_hash = "#" + start_id
-	          endid_hash = "#" + end_id
-	          switch (pathAlgoGlobal) {
-	            
-	            case "dijkstra":
-	              // code block
-	              var dijkstra = cy.elements().dijkstra(startid_hash, function (eles) {
-	                return 1
-	              }, directedGlobal);
-	              var djs = dijkstra.pathTo(endid_hash);
-
-	              for (var x = 0; x < djs.length; x++) {
-	                var el = djs[x];
-	                el.addClass('highlighted');
-	              }
-	              break;
-
-	            case "aStar":
-	              // code block
-	              var aStar = cy.elements().aStar({
-	                root: startid_hash,
-	                goal: endid_hash,
-	                directed: directedGlobal
-	              });
-	              for (var x = 0; x < aStar.path.length; x++) {
-	                var el = aStar.path[x];
-	                el.addClass('highlighted');
-	              }
-	              break;
-
-	            case "floydWarshall":
-	              // code block
-	              var fw = cy.elements().floydWarshall();
-	              fw_collection = fw.path(startid_hash, endid_hash)
-	              for (var x = 0; x < fw_collection.length; x++) {
-	                var el = fw_collection[x];
-	                el.addClass('highlighted');
-	              }
-	              break;
-	            case "bellmanFord":
-	              // code block
-	              var bellmanFord = cy.elements().bellmanFord({
-	                root: startid_hash,
-	                directed: directedGlobal
-	              });
-	              var djs = bellmanFord.pathTo(endid_hash);
-	              for (var x = 0; x < djs.length; x++) {
-	                var el = djs[x];
-	                el.addClass('highlighted');
-	              }
-	              break;
-
-	            default:
-	              // code block
-	              var dijkstra = cy.elements().dijkstra(startid_hash, function (eles) {
-	                return 1
-	              }, directedGlobal);
-	              var djs = dijkstra.pathTo(endid_hash);
-
-	              for (var x = 0; x < djs.length; x++) {
-	                var el = djs[x];
-	                el.addClass('highlighted');
-	              }
-	              break;
-	          }
-	          start = undefined;
-	          end = undefined;
-	        }
-
-	        // End - Single Path Highlighting Function
-
-	        // Begin - Higlight All Paths From.
-	        function highlightAllPathsFrom(start_node) {
-	          start_node = "#" + start_node;
-	          var bfs = cy.elements().bfs(start_node, 1, directedGlobal);
-	          for (var x = 0; x < bfs.path.length; x++) {
-	            var el = bfs.path[x];
-	            el.addClass('highlighted');
+	          function deleteElement(elementId) {
+	            // Delete the search box
+	            var element = document.getElementById(elementId);
+	            element.remove(element);
 	          }
 
-	        }
-	        // End Higlight All Nodes between path.  
+	          function displayMessage(time, message) {
+	            let popper2 = cy.popper({
+	              content: () => {
+	                // Create an input box
+	                var x = document.createElement("p");
+	                x.setAttribute("name", "message_box");
+	                x.textContent("test");
+	                document.body.appendChild(x);
+	                return x;
+	              },
+	              renderedPosition: () => ({
+	                x: 10,
+	                y: 10
+	              }),
+	              popper: {
 
-	        // Debounce Function for improved performance
-	        function debounce(func, wait, immediate) {
-	          var timeout;
-	          return function () {
-	            var context = this,
-	              args = arguments;
-	            var later = function () {
-	              timeout = null;
-	              if (!immediate) func.apply(context, args);
+	              } // my popper options here
+	            });
+	          }
+
+	          function httpRequest(url, hec_code, message, description) {
+	            var xhttp = new XMLHttpRequest();
+	            full_hec = "Splunk " + hec_code;
+	            full_message = {
+	              "event": {
+	                "description": description,
+	                "message": message
+	              }
 	            };
-	            var callNow = immediate && !timeout;
-	            clearTimeout(timeout);
-	            timeout = setTimeout(later, wait);
-	            if (callNow) func.apply(context, args);
-	          };
-	        };
+	            xhttp.open("POST", url, true);
+	            xhttp.setRequestHeader("Authorization", full_hec);
+	            xhttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+	            xhttp.send(JSON.stringify(full_message));
 
-	        function nodeById(name, node_id) {
-	          return nodesByName[name].id || (nodesByName[name].id = node_id);
-	        }
-
-	        // Search Icon Function
-	        function searchIcon(searchFieldValue) {
-	          // If there is a direct match for the field value
-	          if (stringIcon[searchFieldValue]) {
-	            return stringIcon[searchFieldValue]
 	          }
-	          // Iterate through regexes to try and match the string
-	          else if (regexIcon) {
-	            // For each regex in list
-	            for (i = 0; i < Object.keys(regexIcon).length + 1; i++) {
-	              // Check if regex is valid if not throw message
 
-	              if (regexIcon[i]) {
-	                try {
-	                  var re = RegExp(regexIcon[i].fieldValue);
-	                } catch (e) {
-	                  throw new SplunkVisualizationBase.VisualizationError(
-	                    'Invalid Regex of ' + escapeHtml(regexIcon[i].fieldValue))
-	                }
-
-	                // Check if the regex matches
-	                if (re.test(searchFieldValue)) {
-	                  // If so return the icon
-	                  return regexIcon[i].icon
-	                }
-	              } else {
-	                return "/static/app/link_analysis_app/default.png"
-	              }
-	            }
-	          } else {
-	            // No matches so return a default image.
-	            return "/static/app/link_analysis_app/default.png"
+	          function toggleModal() {
+	            modal.classList.toggle("show-modal");
 	          }
-	        }
-	      },
 
-	      // Search data params
-	      getInitialDataParams: function () {
-	        return ({
-	          outputMode: SplunkVisualizationBase.ROW_MAJOR_OUTPUT_MODE,
-	          count: 3000
-	        });
-	      },
+	        },
 
-	      // Override to respond to re-sizing events
-	      reflow: function () {}
-	    });
-	  }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+
+	        // Search data params
+	        getInitialDataParams: function () {
+	          return ({
+	            outputMode: SplunkVisualizationBase.ROW_MAJOR_OUTPUT_MODE,
+	            count: 10000
+	          });
+	        },
+
+	        // Override to respond to re-sizing events
+	        reflow: function () {}
+	      });
+	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 /***/ }),
 /* 1 */
@@ -24043,7 +24605,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	var Map$1 = typeof Map !== 'undefined' ? Map : ObjectMap;
 
 	/* global Set */
-	var undef = "undefined";
+	var undef =  "undefined" ;
 
 	var ObjectSet =
 	/*#__PURE__*/
@@ -24236,6 +24798,13 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      source: null,
 	      target: null,
 	      main: null
+	    },
+	    arrowBounds: {
+	      // bounds cache of edge arrows
+	      source: null,
+	      target: null,
+	      'mid-source': null,
+	      'mid-target': null
 	    }
 	  };
 
@@ -25288,9 +25857,6 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  }
 	}; // elesfn
 
-	var arePositionsSame = function arePositionsSame(p1, p2) {
-	  return p1.x === p2.x && p1.y === p2.y;
-	};
 	var copyPosition = function copyPosition(p) {
 	  return {
 	    x: p.x,
@@ -25455,9 +26021,6 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	  return v;
 	};
-	var normalize = function normalize(v) {
-	  return inPlaceSumNormalize(v.slice());
-	}; // from http://en.wikipedia.org/wiki/Bézier_curve#Quadratic_curves
 
 	var qbezierAt = function qbezierAt(p0, p1, p2, t) {
 	  return (1 - t) * (1 - t) * p0 + 2 * (1 - t) * t * p1 + t * t * p2;
@@ -25484,16 +26047,6 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    x: p0.x + normVec.x * d,
 	    y: p0.y + normVec.y * d
 	  };
-	};
-	var lineAtDist = function lineAtDist(p0, p1, d) {
-	  return lineAt(p0, p1, undefined, d);
-	}; // get angle at A via cosine law
-
-	var triangleAngle = function triangleAngle(A, B, C) {
-	  var a = dist(B, C);
-	  var b = dist(A, C);
-	  var c = dist(A, B);
-	  return Math.acos((a * a + b * b - c * c) / (2 * a * b));
 	};
 	var bound = function bound(min, val, max) {
 	  return Math.max(min, Math.min(max, val));
@@ -25549,16 +26102,6 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  bb.w = 0;
 	  bb.h = 0;
 	};
-	var shiftBoundingBox = function shiftBoundingBox(bb, dx, dy) {
-	  return {
-	    x1: bb.x1 + dx,
-	    x2: bb.x2 + dx,
-	    y1: bb.y1 + dy,
-	    y2: bb.y2 + dy,
-	    w: bb.w,
-	    h: bb.h
-	  };
-	};
 	var updateBoundingBox = function updateBoundingBox(bb1, bb2) {
 	  // update bb1 with bb2 bounds
 	  bb1.x1 = Math.min(bb1.x1, bb2.x1);
@@ -25586,20 +26129,6 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  bb.h = bb.y2 - bb.y1;
 	  return bb;
 	};
-
-	var expandToInt = function expandToInt(x) {
-	  return x > 0 ? Math.ceil(x) : Math.floor(x);
-	};
-
-	var expandBoundingBoxToInts = function expandBoundingBoxToInts(bb) {
-	  var padding = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
-	  bb.x1 = expandToInt(bb.x1 - padding);
-	  bb.y1 = expandToInt(bb.y1 - padding);
-	  bb.x2 = expandToInt(bb.x2 + padding);
-	  bb.y2 = expandToInt(bb.y2 + padding);
-	  bb.w = bb.x2 - bb.x1;
-	  bb.h = bb.y2 - bb.y1;
-	}; // assign the values of bb2 into bb1
 
 	var assignBoundingBox = function assignBoundingBox(bb1, bb2) {
 	  bb1.x1 = bb2.x1;
@@ -26118,28 +26647,6 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    return [nearIntersectionX, nearIntersectionY];
 	  }
 	};
-	var findCircleNearPoint = function findCircleNearPoint(centerX, centerY, radius, farX, farY) {
-	  var displacementX = farX - centerX;
-	  var displacementY = farY - centerY;
-	  var distance = Math.sqrt(displacementX * displacementX + displacementY * displacementY);
-	  var unitDisplacementX = displacementX / distance;
-	  var unitDisplacementY = displacementY / distance;
-	  return [centerX + unitDisplacementX * radius, centerY + unitDisplacementY * radius];
-	};
-	var findMaxSqDistanceToOrigin = function findMaxSqDistanceToOrigin(points) {
-	  var maxSqDistance = 0.000001;
-	  var sqDistance;
-
-	  for (var i = 0; i < points.length / 2; i++) {
-	    sqDistance = points[i * 2] * points[i * 2] + points[i * 2 + 1] * points[i * 2 + 1];
-
-	    if (sqDistance > maxSqDistance) {
-	      maxSqDistance = sqDistance;
-	    }
-	  }
-
-	  return maxSqDistance;
-	};
 	var midOfThree = function midOfThree(a, b, c) {
 	  if (b <= a && a <= c || c <= a && a <= b) {
 	    return a;
@@ -26348,73 +26855,6 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    ctrlPtOffsetPct: 0.05
 	  };
 	};
-
-	var math = /*#__PURE__*/Object.freeze({
-	  arePositionsSame: arePositionsSame,
-	  copyPosition: copyPosition,
-	  modelToRenderedPosition: modelToRenderedPosition,
-	  renderedToModelPosition: renderedToModelPosition,
-	  array2point: array2point,
-	  min: min,
-	  max: max,
-	  mean: mean,
-	  median: median,
-	  deg2rad: deg2rad,
-	  getAngleFromDisp: getAngleFromDisp,
-	  log2: log2,
-	  signum: signum,
-	  dist: dist,
-	  sqdist: sqdist,
-	  inPlaceSumNormalize: inPlaceSumNormalize,
-	  normalize: normalize,
-	  qbezierAt: qbezierAt,
-	  qbezierPtAt: qbezierPtAt,
-	  lineAt: lineAt,
-	  lineAtDist: lineAtDist,
-	  triangleAngle: triangleAngle,
-	  bound: bound,
-	  makeBoundingBox: makeBoundingBox,
-	  copyBoundingBox: copyBoundingBox,
-	  clearBoundingBox: clearBoundingBox,
-	  shiftBoundingBox: shiftBoundingBox,
-	  updateBoundingBox: updateBoundingBox,
-	  expandBoundingBoxByPoint: expandBoundingBoxByPoint,
-	  expandBoundingBox: expandBoundingBox,
-	  expandBoundingBoxToInts: expandBoundingBoxToInts,
-	  assignBoundingBox: assignBoundingBox,
-	  assignShiftToBoundingBox: assignShiftToBoundingBox,
-	  boundingBoxesIntersect: boundingBoxesIntersect,
-	  inBoundingBox: inBoundingBox,
-	  pointInBoundingBox: pointInBoundingBox,
-	  boundingBoxInBoundingBox: boundingBoxInBoundingBox,
-	  roundRectangleIntersectLine: roundRectangleIntersectLine,
-	  inLineVicinity: inLineVicinity,
-	  inBezierVicinity: inBezierVicinity,
-	  solveQuadratic: solveQuadratic,
-	  solveCubic: solveCubic,
-	  sqdistToQuadraticBezier: sqdistToQuadraticBezier,
-	  sqdistToFiniteLine: sqdistToFiniteLine,
-	  pointInsidePolygonPoints: pointInsidePolygonPoints,
-	  pointInsidePolygon: pointInsidePolygon,
-	  joinLines: joinLines,
-	  expandPolygon: expandPolygon,
-	  intersectLineEllipse: intersectLineEllipse,
-	  checkInEllipse: checkInEllipse,
-	  intersectLineCircle: intersectLineCircle,
-	  findCircleNearPoint: findCircleNearPoint,
-	  findMaxSqDistanceToOrigin: findMaxSqDistanceToOrigin,
-	  midOfThree: midOfThree,
-	  finiteLinesIntersect: finiteLinesIntersect,
-	  polygonIntersectLine: polygonIntersectLine,
-	  shortenIntersection: shortenIntersection,
-	  generateUnitNgonPointsFitToSquare: generateUnitNgonPointsFitToSquare,
-	  fitPolygonToSquare: fitPolygonToSquare,
-	  generateUnitNgonPoints: generateUnitNgonPoints,
-	  getRoundRectangleRadius: getRoundRectangleRadius,
-	  getCutRectangleCornerLength: getCutRectangleCornerLength,
-	  bezierPtsToQuadCoeff: bezierPtsToQuadCoeff,
-	  getBarrelCurveConstants: getBarrelCurveConstants
-	});
 
 	var pageRankDefaults = defaults({
 	  dampingFactor: 0.8,
@@ -27041,7 +27481,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  }
 	};
 
-	var normalize$1 = function normalize(M, n) {
+	var normalize = function normalize(M, n) {
 	  var sum;
 
 	  for (var col = 0; col < n; col++) {
@@ -27098,7 +27538,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    _M[i] = Math.pow(M[i], inflateFactor);
 	  }
 
-	  normalize$1(_M, n);
+	  normalize(_M, n);
 	  return _M;
 	};
 
@@ -27198,7 +27638,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	  addLoops(M, n, opts.multFactor); // Step 2: M = normalize( M );
 
-	  normalize$1(M, n);
+	  normalize(M, n);
 	  var isStillMoving = true;
 	  var iterations = 0;
 
@@ -27473,9 +27913,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	  if (opts.testMode) {
 	    if (typeof opts.testCentroids === 'number') {
-	      // TODO: implement a seeded random number generator.
-	      var seed = opts.testCentroids;
-	      centroids = randomCentroids(nodes, opts.k, opts.attributes, seed);
+	      centroids = randomCentroids(nodes, opts.k, opts.attributes);
 	    } else if (_typeof(opts.testCentroids) === 'object') {
 	      centroids = opts.testCentroids;
 	    } else {
@@ -27918,8 +28356,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  if (root.value) {
 	    arr.push(root.value);
 	  } else {
-	    if (root.left) getAllChildren(root.left, arr, cy);
-	    if (root.right) getAllChildren(root.right, arr, cy);
+	    if (root.left) getAllChildren(root.left, arr);
+	    if (root.right) getAllChildren(root.right, arr);
 	  }
 	};
 
@@ -27963,8 +28401,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	  if (k === 0) {
 	    // don't cut tree, simply return all nodes as 1 single cluster
-	    if (root.left) getAllChildren(root.left, left, cy);
-	    if (root.right) getAllChildren(root.right, right, cy);
+	    if (root.left) getAllChildren(root.left, left);
+	    if (root.right) getAllChildren(root.right, right);
 	    leaves = left.concat(right);
 	    return [cy.collection(leaves)];
 	  } else if (k === 1) {
@@ -27973,8 +28411,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      // leaf node
 	      return [cy.collection(root.value)];
 	    } else {
-	      if (root.left) getAllChildren(root.left, left, cy);
-	      if (root.right) getAllChildren(root.right, right, cy);
+	      if (root.left) getAllChildren(root.left, left);
+	      if (root.right) getAllChildren(root.right, right);
 	      return [cy.collection(left), cy.collection(right)];
 	    }
 	  } else {
@@ -28391,7 +28829,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	  var exemplarsIndices = findExemplars(n, R, A); // Assign nodes to clusters
 
-	  var clusterIndices = assign$2(n, S, exemplarsIndices, nodes, id2position);
+	  var clusterIndices = assign$2(n, S, exemplarsIndices);
 	  var clusters = {};
 
 	  for (var c = 0; c < exemplarsIndices.length; c++) {
@@ -30728,7 +31166,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	match[Type.DATA_EXIST] = function (check, ele) {
 	  var field = check.field,
 	      operator = check.operator;
-	  return existCmp(data(ele, field), operator);
+	  return existCmp(data(ele, field));
 	};
 
 	match[Type.UNDIRECTED_EDGE] = function (check, ele) {
@@ -30877,7 +31315,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      this.invalid = true;
 	    }
 	  } else {
-	    error('A selector must be created from a string; found ', selector);
+	    error('A selector must be created from a string; found ');
 	  }
 	};
 
@@ -31756,12 +32194,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        bottom: parent.pstyle('min-height-bias-bottom')
 	      }
 	    };
-
-	    var takesUpSpace = function takesUpSpace(ele) {
-	      return ele.pstyle('display').value === 'element';
-	    };
-
-	    var bb = children.filter(takesUpSpace).boundingBox({
+	    var bb = children.boundingBox({
 	      includeLabels: includeLabels,
 	      includeOverlays: false,
 	      // updating the compound bounds happens outside of the regular
@@ -32118,18 +32551,25 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  var headless = cy.headless();
 	  var bounds = makeBoundingBox();
 	  var _p = ele._private;
-	  var display = styleEnabled ? ele.pstyle('display').value : 'element';
 	  var isNode = ele.isNode();
 	  var isEdge = ele.isEdge();
 	  var ex1, ex2, ey1, ey2; // extrema of body / lines
 
 	  var x, y; // node pos
 
-	  var displayed = display !== 'none';
 	  var rstyle = _p.rstyle;
-	  var manualExpansion = isNode && styleEnabled ? ele.pstyle('bounds-expansion').pfValue : 0;
+	  var manualExpansion = isNode && styleEnabled ? ele.pstyle('bounds-expansion').pfValue : 0; // must use `display` prop only, as reading `compound.width()` causes recursion
+	  // (other factors like width values will be considered later in this function anyway)
+
+	  var isDisplayed = function isDisplayed(ele) {
+	    return ele.pstyle('display').value !== 'none';
+	  };
+
+	  var displayed = !styleEnabled || isDisplayed(ele) // must take into account connected nodes b/c of implicit edge hiding on display:none node
+	  && (!isEdge || isDisplayed(ele.source()) && isDisplayed(ele.target()));
 
 	  if (displayed) {
+	    // displayed suffices, since we will find zero area eles anyway
 	    var overlayOpacity = 0;
 	    var overlayPadding = 0;
 
@@ -32255,10 +32695,10 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 	    if (styleEnabled && options.includeEdges && isEdge) {
-	      updateBoundsFromArrow(bounds, ele, 'mid-source', options);
-	      updateBoundsFromArrow(bounds, ele, 'mid-target', options);
-	      updateBoundsFromArrow(bounds, ele, 'source', options);
-	      updateBoundsFromArrow(bounds, ele, 'target', options);
+	      updateBoundsFromArrow(bounds, ele, 'mid-source');
+	      updateBoundsFromArrow(bounds, ele, 'mid-target');
+	      updateBoundsFromArrow(bounds, ele, 'source');
+	      updateBoundsFromArrow(bounds, ele, 'target');
 	    } // ghost
 	    ////////
 
@@ -32306,11 +32746,11 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    }
 
 	    if (styleEnabled && options.includeLabels) {
-	      updateBoundsFromLabel(bounds, ele, null, options);
+	      updateBoundsFromLabel(bounds, ele, null);
 
 	      if (isEdge) {
-	        updateBoundsFromLabel(bounds, ele, 'source', options);
-	        updateBoundsFromLabel(bounds, ele, 'target', options);
+	        updateBoundsFromLabel(bounds, ele, 'source');
+	        updateBoundsFromLabel(bounds, ele, 'target');
 	      }
 	    } // style enabled for labels
 
@@ -32456,9 +32896,10 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	var filledBbOpts = defaults(defBbOpts);
 
 	elesfn$j.boundingBox = function (options) {
-	  // the main usecase is ele.boundingBox() for a single element with no/def options
+	  var bounds; // the main usecase is ele.boundingBox() for a single element with no/def options
 	  // specified s.t. the cache is used, so check for this case to make it faster by
 	  // avoiding the overhead of the rest of the function
+
 	  if (this.length === 1 && this[0]._private.bbCache != null && (options === undefined || options.useCache === undefined || options.useCache === true)) {
 	    if (options === undefined) {
 	      options = defBbOpts;
@@ -32466,32 +32907,32 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      options = filledBbOpts(options);
 	    }
 
-	    return cachedBoundingBoxImpl(this[0], options);
-	  }
+	    bounds = cachedBoundingBoxImpl(this[0], options);
+	  } else {
+	    bounds = makeBoundingBox();
+	    options = options || defBbOpts;
+	    var opts = filledBbOpts(options);
+	    var eles = this;
+	    var cy = eles.cy();
+	    var styleEnabled = cy.styleEnabled();
 
-	  var bounds = makeBoundingBox();
-	  options = options || defBbOpts;
-	  var opts = filledBbOpts(options);
-	  var eles = this;
-	  var cy = eles.cy();
-	  var styleEnabled = cy.styleEnabled();
-
-	  if (styleEnabled) {
-	    for (var i = 0; i < eles.length; i++) {
-	      var ele = eles[i];
-	      var _p = ele._private;
-	      var currPosKey = getBoundingBoxPosKey(ele);
-	      var isPosKeySame = _p.bbCachePosKey === currPosKey;
-	      var useCache = opts.useCache && isPosKeySame;
-	      ele.recalculateRenderedStyle(useCache);
+	    if (styleEnabled) {
+	      for (var i = 0; i < eles.length; i++) {
+	        var ele = eles[i];
+	        var _p = ele._private;
+	        var currPosKey = getBoundingBoxPosKey(ele);
+	        var isPosKeySame = _p.bbCachePosKey === currPosKey;
+	        var useCache = opts.useCache && isPosKeySame;
+	        ele.recalculateRenderedStyle(useCache);
+	      }
 	    }
-	  }
 
-	  this.updateCompoundBounds();
+	    this.updateCompoundBounds();
 
-	  for (var _i = 0; _i < eles.length; _i++) {
-	    var _ele = eles[_i];
-	    updateBoundsFromBox(bounds, cachedBoundingBoxImpl(_ele, opts));
+	    for (var _i = 0; _i < eles.length; _i++) {
+	      var _ele = eles[_i];
+	      updateBoundsFromBox(bounds, cachedBoundingBoxImpl(_ele, opts));
+	    }
 	  }
 
 	  bounds.x1 = noninf(bounds.x1);
@@ -32509,6 +32950,16 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    _p.bbCache = null;
 	    _p.bbCacheShift.x = _p.bbCacheShift.y = 0;
 	    _p.bbCachePosKey = null;
+	    _p.bodyBounds = null;
+	    _p.overlayBounds = null;
+	    _p.labelBounds.all = null;
+	    _p.labelBounds.source = null;
+	    _p.labelBounds.target = null;
+	    _p.labelBounds.main = null;
+	    _p.arrowBounds.source = null;
+	    _p.arrowBounds.target = null;
+	    _p.arrowBounds['mid-source'] = null;
+	    _p.arrowBounds['mid-target'] = null;
 	  }
 
 	  this.emitAndNotify('bounds');
@@ -33867,19 +34318,32 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  // Calculates and returns node dimensions { x, y } based on options given
 	  layoutDimensions: function layoutDimensions(options) {
 	    options = getLayoutDimensionOptions(options);
+	    var dims;
 
-	    if (options.nodeDimensionsIncludeLabels) {
+	    if (!this.takesUpSpace()) {
+	      dims = {
+	        w: 0,
+	        h: 0
+	      };
+	    } else if (options.nodeDimensionsIncludeLabels) {
 	      var bbDim = this.boundingBox();
-	      return {
+	      dims = {
 	        w: bbDim.w,
 	        h: bbDim.h
 	      };
 	    } else {
-	      return {
+	      dims = {
 	        w: this.outerWidth(),
 	        h: this.outerHeight()
 	      };
+	    } // sanitise the dimensions for external layouts (avoid division by zero)
+
+
+	    if (dims.w === 0 || dims.h === 0) {
+	      dims.w = dims.h = 1;
 	    }
+
+	    return dims;
 	  },
 	  // using standard layout options, apply position function (w/ or w/o animation)
 	  layoutPositions: function layoutPositions(layout, options, fn) {
@@ -36537,7 +37001,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      }
 
 	      if (!ani_p.started) {
-	        startAnimation(ele, ani, now, isCore);
+	        startAnimation(ele, ani, now);
 	      }
 
 	      step(ele, ani, now, isCore);
@@ -41669,7 +42133,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	      if (depth < eleDepth) {
 	        // only get influenced by elements above
-	        percent += index / (nDepth - 1);
+	        percent += index / nDepth;
 	        samples++;
 	      }
 	    }
@@ -42214,7 +42678,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 	  if (options.randomize) {
-	    randomizePositions(layoutInfo, cy);
+	    randomizePositions(layoutInfo);
 	  }
 
 	  var startTime = performanceNow();
@@ -42234,7 +42698,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    } // Do one step in the phisical simulation
 
 
-	    step$1(layoutInfo, options, i); // Update temperature
+	    step$1(layoutInfo, options); // Update temperature
 
 	    layoutInfo.temperature = layoutInfo.temperature * options.coolingFactor; // logDebug("New temperature: " + layoutInfo.temperature);
 
@@ -42715,13 +43179,13 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  // Calculate node repulsions
 	  calculateNodeForces(layoutInfo, options); // Calculate edge forces
 
-	  calculateEdgeForces(layoutInfo, options); // Calculate gravity forces
+	  calculateEdgeForces(layoutInfo); // Calculate gravity forces
 
 	  calculateGravityForces(layoutInfo, options); // Propagate forces from parent to child
 
-	  propagateForces(layoutInfo, options); // Update positions based on calculated forces
+	  propagateForces(layoutInfo); // Update positions based on calculated forces
 
-	  updatePositions(layoutInfo, options);
+	  updatePositions(layoutInfo);
 	};
 	/**
 	 * @brief : Computes the node repulsion forces
@@ -45879,7 +46343,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	          var t = isSrc ? seg.t0 + segDt * tSegment : seg.t1 - segDt * tSegment;
 	          t = bound(0, t, 1);
 	          p = qbezierPtAt(cp.p0, cp.p1, cp.p2, t);
-	          angle = bezierAngle(cp.p0, cp.p1, cp.p2, t, p);
+	          angle = bezierAngle(cp.p0, cp.p1, cp.p2, t);
 	          break;
 	        }
 
@@ -46468,7 +46932,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	};
 
 	var BRp$c = {};
-	/* global document, window */
+	/* global document, window, ResizeObserver, MutationObserver */
 
 	BRp$c.registerBinding = function (target, event, handler, useCapture) {
 	  // eslint-disable-line no-unused-vars
@@ -46723,7 +47187,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    }
 	  };
 
-	  var haveMutationsApi = typeof MutationObserver !== 'undefined'; // watch for when the cy container is removed from the dom
+	  var haveMutationsApi = typeof MutationObserver !== 'undefined';
+	  var haveResizeObserverApi = typeof ResizeObserver !== 'undefined'; // watch for when the cy container is removed from the dom
 
 	  if (haveMutationsApi) {
 	    r.removeObserver = new MutationObserver(function (mutns) {
@@ -46771,6 +47236,12 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 	  r.registerBinding(window, 'resize', onResize); // eslint-disable-line no-undef
+
+	  if (haveResizeObserverApi) {
+	    r.resizeObserver = new ResizeObserver(onResize); // eslint-disable-line no-undef
+
+	    r.resizeObserver.observe(r.container);
+	  }
 
 	  var forEachUp = function forEachUp(domEle, fn) {
 	    while (domEle != null) {
@@ -47613,6 +48084,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 	    if (e.touches[1]) {
+	      r.touchData.singleTouchMoved = true;
 	      freeDraggedElements(r.dragData.touchDragEles);
 	      var offsets = r.findContainerClientCoords();
 	      offsetLeft = offsets[0];
@@ -47681,7 +48153,13 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      }
 	    }
 
-	    if (e.touches[2]) ; else if (e.touches[1]) ; else if (e.touches[0]) {
+	    if (e.touches[2]) {
+	      // ignore
+	      // safari on ios pans the page otherwise (normally you should be able to preventdefault on touchmove...)
+	      if (cy.boxSelectionEnabled()) {
+	        e.preventDefault();
+	      }
+	    } else if (e.touches[1]) ; else if (e.touches[0]) {
 	      var nears = r.findNearestElements(now[0], now[1], true, true);
 	      var near = nears[0];
 
@@ -47934,7 +48412,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      }
 
 	      r.touchData.selecting = true;
-	      r.redrawHint('select', true);
+	      r.touchData.didSelect = true;
+	      select[4] = 1;
 
 	      if (!select || select.length === 0 || select[0] === undefined) {
 	        select[0] = (now[0] + now[2] + now[4]) / 3;
@@ -47946,10 +48425,10 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        select[3] = (now[1] + now[3] + now[5]) / 3;
 	      }
 
-	      select[4] = 1;
-	      r.touchData.selecting = true;
+	      r.redrawHint('select', true);
 	      r.redraw(); // pinch to zoom
-	    } else if (capture && e.touches[1] && cy.zoomingEnabled() && cy.panningEnabled() && cy.userZoomingEnabled() && cy.userPanningEnabled()) {
+	    } else if (capture && e.touches[1] && !r.touchData.didSelect // don't allow box selection to degrade to pinch-to-zoom
+	    && cy.zoomingEnabled() && cy.panningEnabled() && cy.userZoomingEnabled() && cy.userPanningEnabled()) {
 	      // two fingers => pinch to zoom
 	      e.preventDefault();
 	      r.data.bgActivePosistion = undefined;
@@ -48048,156 +48527,156 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        now[4] = pos[0];
 	        now[5] = pos[1];
 	      }
-	    } else if (e.touches[0]) {
-	      var start = r.touchData.start;
-	      var last = r.touchData.last;
-	      var near;
+	    } else if (e.touches[0] && !r.touchData.didSelect // don't allow box selection to degrade to single finger events like panning
+	    ) {
+	        var start = r.touchData.start;
+	        var last = r.touchData.last;
+	        var near;
 
-	      if (!r.hoverData.draggingEles && !r.swipePanning) {
-	        near = r.findNearestElement(now[0], now[1], true, true);
-	      }
+	        if (!r.hoverData.draggingEles && !r.swipePanning) {
+	          near = r.findNearestElement(now[0], now[1], true, true);
+	        }
 
-	      if (capture && start != null) {
-	        e.preventDefault();
-	      } // dragging nodes
+	        if (capture && start != null) {
+	          e.preventDefault();
+	        } // dragging nodes
 
 
-	      if (capture && start != null && r.nodeIsDraggable(start)) {
-	        if (isOverThresholdDrag) {
-	          // then dragging can happen
-	          var draggedEles = r.dragData.touchDragEles;
-	          var justStartedDrag = !r.dragData.didDrag;
-
-	          if (justStartedDrag) {
-	            addNodesToDrag(draggedEles, {
-	              inDragLayer: true
-	            });
-	          }
-
-	          r.dragData.didDrag = true;
-	          var totalShift = {
-	            x: 0,
-	            y: 0
-	          };
-
-	          if (number(disp[0]) && number(disp[1])) {
-	            totalShift.x += disp[0];
-	            totalShift.y += disp[1];
+	        if (capture && start != null && r.nodeIsDraggable(start)) {
+	          if (isOverThresholdDrag) {
+	            // then dragging can happen
+	            var draggedEles = r.dragData.touchDragEles;
+	            var justStartedDrag = !r.dragData.didDrag;
 
 	            if (justStartedDrag) {
+	              addNodesToDrag(draggedEles, {
+	                inDragLayer: true
+	              });
+	            }
+
+	            r.dragData.didDrag = true;
+	            var totalShift = {
+	              x: 0,
+	              y: 0
+	            };
+
+	            if (number(disp[0]) && number(disp[1])) {
+	              totalShift.x += disp[0];
+	              totalShift.y += disp[1];
+
+	              if (justStartedDrag) {
+	                r.redrawHint('eles', true);
+	                var dragDelta = r.touchData.dragDelta;
+
+	                if (dragDelta && number(dragDelta[0]) && number(dragDelta[1])) {
+	                  totalShift.x += dragDelta[0];
+	                  totalShift.y += dragDelta[1];
+	                }
+	              }
+	            }
+
+	            r.hoverData.draggingEles = true;
+	            draggedEles.silentShift(totalShift).emit('position drag');
+	            r.redrawHint('drag', true);
+
+	            if (r.touchData.startPosition[0] == earlier[0] && r.touchData.startPosition[1] == earlier[1]) {
 	              r.redrawHint('eles', true);
-	              var dragDelta = r.touchData.dragDelta;
-
-	              if (dragDelta && number(dragDelta[0]) && number(dragDelta[1])) {
-	                totalShift.x += dragDelta[0];
-	                totalShift.y += dragDelta[1];
-	              }
 	            }
-	          }
 
-	          r.hoverData.draggingEles = true;
-	          draggedEles.silentShift(totalShift).emit('position drag');
-	          r.redrawHint('drag', true);
-
-	          if (r.touchData.startPosition[0] == earlier[0] && r.touchData.startPosition[1] == earlier[1]) {
-	            r.redrawHint('eles', true);
-	          }
-
-	          r.redraw();
-	        } else {
-	          // otherise keep track of drag delta for later
-	          var dragDelta = r.touchData.dragDelta = r.touchData.dragDelta || [];
-
-	          if (dragDelta.length === 0) {
-	            dragDelta.push(disp[0]);
-	            dragDelta.push(disp[1]);
+	            r.redraw();
 	          } else {
-	            dragDelta[0] += disp[0];
-	            dragDelta[1] += disp[1];
-	          }
-	        }
-	      } // touchmove
+	            // otherise keep track of drag delta for later
+	            var dragDelta = r.touchData.dragDelta = r.touchData.dragDelta || [];
 
-
-	      {
-	        triggerEvents(start || near, ['touchmove', 'tapdrag', 'vmousemove'], e, {
-	          x: now[0],
-	          y: now[1]
-	        });
-
-	        if ((!start || !start.grabbed()) && near != last) {
-	          if (last) {
-	            last.emit({
-	              originalEvent: e,
-	              type: 'tapdragout',
-	              position: {
-	                x: now[0],
-	                y: now[1]
-	              }
-	            });
-	          }
-
-	          if (near) {
-	            near.emit({
-	              originalEvent: e,
-	              type: 'tapdragover',
-	              position: {
-	                x: now[0],
-	                y: now[1]
-	              }
-	            });
-	          }
-	        }
-
-	        r.touchData.last = near;
-	      } // check to cancel taphold
-
-	      if (capture) {
-	        for (var i = 0; i < now.length; i++) {
-	          if (now[i] && r.touchData.startPosition[i] && isOverThresholdDrag) {
-	            r.touchData.singleTouchMoved = true;
-	          }
-	        }
-	      } // panning
-
-
-	      if (capture && (start == null || start.pannable()) && cy.panningEnabled() && cy.userPanningEnabled()) {
-	        var allowPassthrough = allowPanningPassthrough(start, r.touchData.starts);
-
-	        if (allowPassthrough) {
-	          e.preventDefault();
-
-	          if (r.swipePanning) {
-	            cy.panBy({
-	              x: disp[0] * zoom,
-	              y: disp[1] * zoom
-	            });
-	          } else if (isOverThresholdDrag) {
-	            r.swipePanning = true;
-	            cy.panBy({
-	              x: dx * zoom,
-	              y: dy * zoom
-	            });
-
-	            if (start) {
-	              start.unactivate();
-
-	              if (!r.data.bgActivePosistion) {
-	                r.data.bgActivePosistion = array2point(r.touchData.startPosition);
-	              }
-
-	              r.redrawHint('select', true);
-	              r.touchData.start = null;
+	            if (dragDelta.length === 0) {
+	              dragDelta.push(disp[0]);
+	              dragDelta.push(disp[1]);
+	            } else {
+	              dragDelta[0] += disp[0];
+	              dragDelta[1] += disp[1];
 	            }
 	          }
-	        } // Re-project
+	        } // touchmove
 
 
-	        var pos = r.projectIntoViewport(e.touches[0].clientX, e.touches[0].clientY);
-	        now[0] = pos[0];
-	        now[1] = pos[1];
+	        {
+	          triggerEvents(start || near, ['touchmove', 'tapdrag', 'vmousemove'], e, {
+	            x: now[0],
+	            y: now[1]
+	          });
+
+	          if ((!start || !start.grabbed()) && near != last) {
+	            if (last) {
+	              last.emit({
+	                originalEvent: e,
+	                type: 'tapdragout',
+	                position: {
+	                  x: now[0],
+	                  y: now[1]
+	                }
+	              });
+	            }
+
+	            if (near) {
+	              near.emit({
+	                originalEvent: e,
+	                type: 'tapdragover',
+	                position: {
+	                  x: now[0],
+	                  y: now[1]
+	                }
+	              });
+	            }
+	          }
+
+	          r.touchData.last = near;
+	        } // check to cancel taphold
+
+	        if (capture) {
+	          for (var i = 0; i < now.length; i++) {
+	            if (now[i] && r.touchData.startPosition[i] && isOverThresholdDrag) {
+	              r.touchData.singleTouchMoved = true;
+	            }
+	          }
+	        } // panning
+
+
+	        if (capture && (start == null || start.pannable()) && cy.panningEnabled() && cy.userPanningEnabled()) {
+	          var allowPassthrough = allowPanningPassthrough(start, r.touchData.starts);
+
+	          if (allowPassthrough) {
+	            e.preventDefault();
+
+	            if (!r.data.bgActivePosistion) {
+	              r.data.bgActivePosistion = array2point(r.touchData.startPosition);
+	            }
+
+	            if (r.swipePanning) {
+	              cy.panBy({
+	                x: disp[0] * zoom,
+	                y: disp[1] * zoom
+	              });
+	            } else if (isOverThresholdDrag) {
+	              r.swipePanning = true;
+	              cy.panBy({
+	                x: dx * zoom,
+	                y: dy * zoom
+	              });
+
+	              if (start) {
+	                start.unactivate();
+	                r.redrawHint('select', true);
+	                r.touchData.start = null;
+	              }
+	            }
+	          } // Re-project
+
+
+	          var pos = r.projectIntoViewport(e.touches[0].clientX, e.touches[0].clientY);
+	          now[0] = pos[0];
+	          now[1] = pos[1];
+	        }
 	      }
-	    }
 
 	    for (var j = 0; j < now.length; j++) {
 	      earlier[j] = now[j];
@@ -48428,15 +48907,21 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      earlier[j] = now[j];
 	    }
 
-	    r.dragData.didDrag = false; // reset for next mousedown
+	    r.dragData.didDrag = false; // reset for next touchstart
 
 	    if (e.touches.length === 0) {
 	      r.touchData.dragDelta = [];
 	      r.touchData.startPosition = null;
 	      r.touchData.startGPosition = null;
+	      r.touchData.didSelect = false;
 	    }
 
 	    if (e.touches.length < 2) {
+	      if (e.touches.length === 1) {
+	        // the old start global pos'n may not be the same finger that remains
+	        r.touchData.startGPosition = [e.touches[0].clientX, e.touches[0].clientY];
+	      }
+
 	      r.pinching = false;
 	      r.redrawHint('eles', true);
 	      r.redraw();
@@ -49218,6 +49703,10 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	  if (r.styleObserver) {
 	    r.styleObserver.disconnect();
+	  }
+
+	  if (r.resizeObserver) {
+	    r.resizeObserver.disconnect();
 	  }
 
 	  if (r.labelCalcDiv) {
@@ -50234,7 +50723,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	  var layer = null;
 	  var maxElesPerLayer = eles.length / defNumLayers;
-	  var allowLazyQueueing = !firstGet;
+	  var allowLazyQueueing =  !firstGet;
 
 	  for (var i = 0; i < eles.length; i++) {
 	    var ele = eles[i];
@@ -52612,7 +53101,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  }
 
 	  var extent = cy.extent();
-	  var vpManip = r.pinching || r.hoverData.dragging || r.swipePanning || r.data.wheelZooming || r.hoverData.draggingEles;
+	  var vpManip = r.pinching || r.hoverData.dragging || r.swipePanning || r.data.wheelZooming || r.hoverData.draggingEles || r.cy.animated();
 	  var hideEdges = r.hideEdgesOnViewport && vpManip;
 	  var needMbClear = [];
 	  needMbClear[r.NODE] = !needDraw[r.NODE] && motionBlur && !r.clearedForMotionBlur[r.NODE] || r.clearingMotionBlur;
@@ -53453,7 +53942,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	CRp$a.makeOffscreenCanvas = function (width, height) {
 	  var canvas;
 
-	  if ((typeof OffscreenCanvas === "undefined" ? "undefined" : _typeof(OffscreenCanvas)) !== ("undefined")) {
+	  if ((typeof OffscreenCanvas === "undefined" ? "undefined" : _typeof(OffscreenCanvas)) !== ( "undefined" )) {
 	    canvas = new OffscreenCanvas(width, height);
 	  } else {
 	    canvas = document.createElement('canvas'); // eslint-disable-line no-undef
@@ -53818,7 +54307,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  return style;
 	};
 
-	var version = "3.8.0";
+	var version = "3.9.0";
 
 	var cytoscape = function cytoscape(options) {
 	  // if no options specified, use default
@@ -61862,16 +62351,10 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    value.forEach(function(subValue) {
 	      result.add(baseClone(subValue, bitmask, customizer, subValue, value, stack));
 	    });
-
-	    return result;
-	  }
-
-	  if (isMap(value)) {
+	  } else if (isMap(value)) {
 	    value.forEach(function(subValue, key) {
 	      result.set(key, baseClone(subValue, bitmask, customizer, key, value, stack));
 	    });
-
-	    return result;
 	  }
 
 	  var keysFunc = isFull
@@ -70011,8 +70494,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    return;
 	  }
 	  baseFor(source, function(srcValue, key) {
+	    stack || (stack = new Stack);
 	    if (isObject(srcValue)) {
-	      stack || (stack = new Stack);
 	      baseMergeDeep(object, source, key, srcIndex, baseMerge, customizer, stack);
 	    }
 	    else {
@@ -70230,7 +70713,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 /***/ (function(module, exports) {
 
 	/**
-	 * Gets the value at `key`, unless `key` is "__proto__".
+	 * Gets the value at `key`, unless `key` is "__proto__" or "constructor".
 	 *
 	 * @private
 	 * @param {Object} object The object to query.
@@ -70238,6 +70721,10 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	 * @returns {*} Returns the property value.
 	 */
 	function safeGet(object, key) {
+	  if (key === 'constructor' && typeof object[key] === 'function') {
+	    return;
+	  }
+
 	  if (key == '__proto__') {
 	    return;
 	  }
@@ -93255,6 +93742,160 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	})));
 
+
+/***/ }),
+/* 312 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;'use strict';
+
+	console.log("Trying again", [].slice.call(document.querySelectorAll('script[src]')).pop().src.replace(/.*?static\/app\/([^\/]*).*/, "$1"))
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function(obj) { return typeof obj; } : function(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
+	var _createClass = function() {
+	    function defineProperties(target, props) {
+	        for (var i = 0; i < props.length; i++) {
+	            var descriptor = props[i];
+	            descriptor.enumerable = descriptor.enumerable || false;
+	            descriptor.configurable = true;
+	            if ("value" in descriptor) descriptor.writable = true;
+	            Object.defineProperty(target, descriptor.key, descriptor);
+	        }
+	    }
+	    return function(Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; };
+	}();
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _setModalMaxHeight(element) {
+	    this.$element = $(element);
+	    this.$content = this.$element.find('.modal-content');
+	    var borderWidth = this.$content.outerHeight() - this.$content.innerHeight();
+	    var dialogMargin = $(window).width() < 768 ? 20 : 60;
+	    var contentHeight = $(window).height() - (dialogMargin + borderWidth);
+	    var headerHeight = this.$element.find('.modal-header').outerHeight() || 0;
+	    var footerHeight = this.$element.find('.modal-footer').outerHeight() || 0;
+	    var maxHeight = contentHeight - (headerHeight + footerHeight);
+
+	    this.$content.css({
+	        'overflow': 'hidden'
+	    });
+
+	    this.$element
+	        .find('.modal-body').css({
+	            'max-height': maxHeight,
+	            'overflow-y': 'auto'
+	        });
+	}
+
+	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(16)], __WEBPACK_AMD_DEFINE_RESULT__ = function(_) {
+	    return function() {
+	        /**
+	         * A utility wrapper around Bootstrap's modal.
+	         * @param {string|object} id                            Either an id or a jQuery element that contains the id in its "data-target" attribute
+	         * @param {object}         [options]                    Bootstrap modal options
+	         * @param {boolean|string} [options.backdrop]           Whether or not to show a backdrop, or the string "static" to show a backdrop that doesn't close the modal when clicked
+	         * @param {boolean}        [options.keyboard]           Whether or not the escape key clsoes the modal
+	         * @param {boolean}        [options.show=false]         Whether or not to show the modal when it's created
+	         * @param {string}         [options.type='normal']      Can be 'normal', 'wide', or 'noPadding'
+	         * @param {string}         [options.title]              The modal's title
+	         * @param {boolean}        [options.destroyOnHide=true] Destroy the modal when it's hidden
+	         * @returns {element}
+	         */
+	        function Modal(id, options) {
+	            var _this = this;
+
+	            _classCallCheck(this, Modal);
+
+	            var modalOptions = _.extend({ show: false }, options);
+
+	            // if "id" is the element that triggers the modal display, extract the actual id from it; otherwise use it as-is
+	            var modalId = id != null && (typeof id === 'undefined' ? 'undefined' : _typeof(id)) === 'object' && id.jquery != null ? id.attr('data-target').slice(1) : id;
+
+	            var header = $('<div>').addClass('modal-header');
+
+	            var headerCloseButton = $('<button>').addClass('close').attr({
+	                'type': 'button',
+	                'data-dismiss': 'modal',
+	                'aria-label': 'Close'
+	            }).append($('<span>').attr('aria-hidden', true).text('&times;'));
+
+	            this.title = $('<h3>').addClass('modal-title');
+
+	            this.body = $('<div>').addClass('modal-body');
+
+	            this.footer = $('<div>').addClass('modal-footer');
+
+	            // Multiselect can grow large and step over footer causing issues clicking button in footer
+	            this.footer.css('position', 'relative');
+	            this.footer.css('z-index', 1);
+
+	            this.$el = $('<div>').addClass('modal hide fade mlts-modal').attr('id', modalId).append($('<div>').addClass('modal-dialog').append($('<div>').addClass('modal-content').append(header.append(headerCloseButton, this.title), this.body, this.footer)));
+
+	            if (modalOptions.title != null) this.setTitle(modalOptions.title);
+
+	            if (modalOptions.type === 'wide') this.$el.addClass('modal-wide');
+	            else if (modalOptions.type === 'noPadding') this.$el.addClass('mlts-modal-no-padding');
+
+	            // remove the modal from the dom after it's hidden
+	            if (modalOptions.destroyOnHide !== false) {
+	                this.$el.on('hidden.bs.modal', function() {
+	                    return _this.$el.remove();
+	                });
+	            }
+
+	            this.$el.on('show.bs.modal', function() {
+	                $(this).show();
+	                _setModalMaxHeight(this);
+	            });
+
+	            $(window).resize(function() {
+	                if ($('.modal.in').length != 0) {
+	                    _setModalMaxHeight($('.modal.in'));
+	                }
+	            });
+
+	            this.$el.modal(modalOptions);
+	        }
+
+	        _createClass(Modal, [{
+	            key: 'setTitle',
+	            value: function setTitle(titleText) {
+	                this.title.text(titleText);
+	            }
+	        }, {
+	            key: 'setAlert',
+	            value: function setAlert(alertMessage, alertType) {
+	                if (this.alert == null) {
+	                    this.alert = $('<div>').addClass('mlts-modal-alert');
+	                    this.body.prepend(this.alert);
+	                }
+
+	                //Messages.setAlert(this.alert, alertMessage, alertType, undefined, true);
+	            }
+	        }, {
+	            key: 'removeAlert',
+	            value: function removeAlert() {
+	                //Messages.removeAlert(this.alert, true);
+	            }
+	        }, {
+	            key: 'show',
+	            value: function show() {
+	                this.$el.modal('show');
+	            }
+	        }, {
+	            key: 'hide',
+	            value: function hide() {
+	                this.$el.modal('hide');
+	            }
+	        }]);
+
+	        return Modal;
+	    }();
+	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+
+
+	//# sourceURL=Modal.js
 
 /***/ })
 /******/ ])});;

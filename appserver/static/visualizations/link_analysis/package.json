@@ -14,13 +14,16 @@
     "webpack": "^1.12.6"
   },
   "dependencies": {
-    "cytoscape": "^3.3.3",
-    "cytoscape-cose-bilkent": "^4.0.0",
-    "cytoscape-cxtmenu": "^3.0.2",
+    "backbone": "^1.4.0",
+    "cytoscape": "*",
+    "cytoscape-cxtmenu": "*",
+    "cytoscape-dagre": "*",
+    "cytoscape-fcose": "*",
+    "cytoscape-klay": "*",
+    "cytoscape-popper": "*",
     "d3": "4.10.0",
     "jquery": "^3.3.1",
-    "splunk-logging": "^0.10.1",
-    "underscore": "^1.9.1",
-    "tippy.js": "*"
+    "tippy.js": "^4.3.5",
+    "underscore": "^1.9.1"
   }
 }
