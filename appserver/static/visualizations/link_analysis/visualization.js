@@ -50,6 +50,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	  SANKEY Diagram - Used filtering functions
 	  Unique List - https://medium.com/front-end-weekly/getting-unique-values-in-javascript-arrays-17063080f836
 	  SA-devforall - Modal Ideas
+	  Random Hash Creator - https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
+
 	  */
 	  !(__WEBPACK_AMD_DEFINE_ARRAY__ = [
 	      __webpack_require__(5),
@@ -99,6 +101,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      var preRemove;
 	      var initialRun;
 	      var element_preRemove;
+	      var boxedNodes;
+	      var bgColor;
+	      var textColor;
 
 
 
@@ -108,12 +113,11 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	          SplunkVisualizationBase.prototype.initialize.apply(this, arguments);
 	          this.$el = $(this.el);
 
-	          /*if (SplunkVisualizationUtils.getCurrentTheme && SplunkVisualizationUtils.getCurrentTheme() === 'dark'){
-	            this.$el.addClass('dark');
+	        if (SplunkVisualizationUtils.getCurrentTheme && SplunkVisualizationUtils.getCurrentTheme() === 'dark'){
+	            bgColor = "#212527";
+	            textColor = "#ffffff";
 	          }
-	          */
-	          // Initialization logic goes here
-
+	        
 	        },
 
 
@@ -462,95 +466,6 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	              .attr('id', 'cy')
 	              .attr('active-bg-color', '#555');
 	          }
-	          /*
-	          modal_main = d3.select("div.main-section-body")
-	            .append("div")
-	            .attr("class","modal hide fade")
-	            .attr("id", "myModal");
-
-	            modal_header = modal_main.append("div")
-	            .attr("class","modal-header");
-	            
-	            modal_header.append("button")
-	            .attr("class","close")
-	            .attr("data-dismiss","modal")
-	            .attr("aria-hidden","true")
-	            .text("testText");
-
-	            modal_header
-	            .append("h3")
-	            .text("Header Text");
-	          
-	            modal_main
-	            .append("div")
-	            .attr("class","modal-body")
-	            .append("p")
-	            .text("paragraph");
-
-
-	            modal_footer =
-	            modal_main
-	            .append("div")
-	            .attr("class","modal-footer");
-
-	            modal_footer
-	            .append("a")
-	            .attr("href", "#")
-	            .attr("class","btn")
-	            .text("Close");
-
-	            modal_footer
-	            .append("a")
-	            .attr("href", "#")
-	            .attr("class","btn btn-primary")
-	            .text("Save");
-
-
-
-	            <div class="modal hide fade" id="myModal">
-	<div class="modal-header">
-	    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-	    <h3>Modal header</h3>
-	</div>
-	<div class="modal-body">
-	    <p>One fine body…</p>
-	</div>
-	<div class="modal-footer">
-	    <a href="#" class="btn">Close</a>
-	    <a href="#" class="btn btn-primary">Save changes</a>
-	</div>
-
-	            .attr("id", "myModal")
-	          d3.select("body").
-	          select("div.main-section-body")
-	            .append("div")
-	            .attr("class", "modal")
-	            .append("div")
-	            .attr("class", "modal-content")
-	            .append("span")
-	            .attr("class", "close-button")
-	            .text("Close")
-	            .append("h1")
-	            .text("Hello world");
-	            var modal = document.querySelector(".modal");
-	            var closeButton = document.querySelector(".close-button");
-
-
-	            <div style="position: relative; top: auto; left: auto; margin: 0 auto 20px; z-index: 1; max-width: 100%;" class="modal">
-	                  <div class="modal-header">
-	                    <button aria-hidden="true" data-dismiss="modal" class="close" type="button">×</button>
-	                    <h3>Modal header</h3>
-	                  </div>
-	                  <div class="modal-body">
-	                    <p>One fine body…</p>
-	                  </div>
-	                  <div class="modal-footer">
-	                    <a class="btn" href="#">Close</a>
-	                    <a class="btn btn-primary" href="#">Save changes</a>
-	                  </div>
-	            </div>
-
-	*/
 
 	          // Add Cytoscape Element
 	          var cy = cytoscape({
@@ -669,11 +584,27 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	              'control-point-weight': '0.5', // '0': curve towards source node, '1': towards target node.
 
 	            })
+	            if (bgColor){
 	          cy.style()
 	            .selector('core')
 	            .style({
-	              'active-bg-color': '#555',
+	              'background': bgColor
 	            })
+	            cy.style()
+	            .selector('edge')
+	            .style({
+	              'color': textColor,
+	              'text-background-color': bgColor
+	            })
+
+	            cy.style()
+	            .selector('node')
+	            .style({
+	              'color': textColor
+	            })
+
+
+	          }
 
 	          if (this.format_info.line_label) {
 	            cy.style()
@@ -986,37 +917,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            });
 	            cy.cxtmenu({
 	              selector: 'core',
-	              commands: [
-	                /*{
-	                                  content: 'Clear Fmt',
-	                                  select: function (ele) {
-	                                    start = undefined;
-	                                    end = undefined;
-	                                    cy.elements().removeClass('highlighted');
-
-	                                  },
-	                                },
-	                                {
-	                                  content: 'Del Hltd',
-	                                  select: function (ele) {
-	                                    cy.remove(boxedNodes);
-	                                    var element_del = cy.elements(cy.$('.highlighted'));
-	                                    // Remove elements
-	                                    cy.remove(element_del);
-
-	                                  },
-	                                },
-	                                {
-	                                  content: 'Del Non Hltd',
-	                                  select: function (ele) {
-	                                    // Select all elements that are not highligted
-	                                    var element_del = cy.elements().not(cy.$('.highlighted'));
-	                                    // Remove elements
-	                                    cy.remove(element_del);
-	                                  },
-	                                },*/
-	                {
-	                  content: 'Search NodesN',
+	              commands: [{
+	                  content: 'Search Nodes',
 	                  select: function () {
 	                    // Now we initialize the Modal itself
 	                    var myModal = new Modal("modal1", {
@@ -1052,55 +954,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                    myModal.show(); // Launch it!
 	                  },
 	                },
-	                /*{
-	                  content: 'Search',
-	                  select: function (ele) {
-	                    // create a basic popper on the core
-	                    let popper2 = cy.popper({
-	                      content: () => {
-	                        // Create an input box
-	                        var x = document.createElement("input");
-	                        x.setAttribute("name", "node_search");
-	                        x.setAttribute("id", "node_search");
-	                        x.setAttribute("type", "text");
-	                        x.setAttribute("list", "node_list");
-	                        x.setAttribute("style", "z-index:9999")
-	                        x.addEventListener("keydown", function (e) {
-	                          if (!e) {
-	                            var e = window.event;
-	                          }
-	                          // Enter is pressed
-	                          if (e.keyCode == 13) {
-	                            e.preventDefault(); // sometimes useful
-	                            searchNodes();
-	                          }
-	                        }, false);;
-	                        document.body.appendChild(x);
 
-	                        // Create a list element
-	                        var y = document.createElement("datalist");
-	                        y.setAttribute("id", "node_list");
-	                        document.body.appendChild(y);
-
-	                        // Add nodes to list
-	                        var list = document.getElementById('node_list');
-	                        nodesUnique.forEach(function (node) {
-	                          var option = document.createElement('option');
-	                          option.value = node;
-	                          list.appendChild(option);
-	                        });
-	                        return x;
-	                      },
-	                      renderedPosition: () => ({
-	                        x: 10,
-	                        y: 10
-	                      }),
-	                      popper: {
-
-	                      } // my popper options here
-	                    });
-	                  },
-	                },*/
 	                {
 	                  content: 'Menu',
 	                  select: function (ele) {
@@ -1334,9 +1188,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	            switch (x.value) {
 	              case "Delete Highlighted Items":
-	                // // deleteElement('menu_list')
+
 	                deleteElement('menu_select')
-	                cy.remove(boxedNodes);
+
 	                var element_del = cy.elements(cy.$('.highlighted'));
 	                // Remove elements
 	                cy.remove(element_del);
@@ -1391,17 +1245,17 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                  .append($('<p>This menu allows you to save state of your diagram</p>'));
 
 
-	                  myModal.body
+	                myModal.body
 	                  .append($('<h4>HTTP Event Code</h4>'));
 	                myModal.body
-	                  .append($('<input type="text" id="http_event_code" name="http_event_code" required>'));
+	                  .append($('<input type="text" autocomplete="on" id="http_event_code" name="http_event_code" required>'));
 
-	                  myModal.body
+	                myModal.body
 	                  .append($('<h4>HTTP Destination</h4>'));
 	                myModal.body
-	                  .append($('<input type="text" id="http_destination" name="http_destination" value="https://yoursplunkserver.com:8089/services/collector" required>'));
+	                  .append($('<input type="text" id="http_destination" autocomplete="on" name="http_destination" value="https://yoursplunkserver.com:8089/services/collector" required>'));
 
-	                  myModal.body
+	                myModal.body
 	                  .append($('<h4>Description</h4>'));
 	                myModal.body
 	                  .append($('<input type="text" id="http_description" name="http_description" value="This graph shows ...." required>'));
@@ -1412,134 +1266,13 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                  'data-dismiss': 'modal'
 	                }).addClass('btn btn-primary').text('Submit').on('click', function (modalEle) {
 	                  // Post to HEC 
-	                  debugger; 
 	                  var description = document.getElementById("http_description").value;
 	                  var http_event_code = document.getElementById("http_event_code").value;
 	                  var http_destination = document.getElementById("http_destination").value;
 	                  httpRequest(http_destination, http_event_code, cy.json(), description);
 
 	                }))
-	                myModal.show(); // Launch it!
-
-	/*
-	                let hec_popper_msg = cy.popper({
-	                  content: () => {
-	                    // Create an input box
-	                    var x = document.createElement("input");
-	                    x.setAttribute("name", "hec_code");
-	                    x.setAttribute("id", "hec_code");
-	                    x.setAttribute("type", "text");
-	                    x.setAttribute("style", "z-index:9999")
-	                    document.body.appendChild(x);
-	                    return x;
-	                  },
-	                  renderedPosition: () => ({
-	                    x: 10,
-	                    y: 10
-	                  }),
-	                  popper: {}
-	                });
-
-	                let hec_popper_para = cy.popper({
-	                  content: () => {
-	                    // Create an input box
-	                    var para = document.createElement("p");
-	                    node = document.createTextNode("HEC Code.");
-	                    para.setAttribute("id", "hec_para_desc");
-	                    para.setAttribute("style", "z-index:9999")
-	                    para.appendChild(node);
-	                    document.body.appendChild(para);
-	                    return para;
-	                  },
-	                  renderedPosition: () => ({
-	                    x: 250,
-	                    y: 15
-	                  }),
-	                  popper: {}
-	                });
-
-	                let url_popper = cy.popper({
-	                  content: () => {
-	                    // Create an input box
-	                    var x = document.createElement("input");
-	                    x.setAttribute("name", "url_code");
-	                    x.setAttribute("id", "url_code");
-	                    x.setAttribute("type", "text");
-	                    x.setAttribute("style", "z-index:9999")
-	                    document.body.appendChild(x);
-	                    return x;
-	                  },
-	                  renderedPosition: () => ({
-	                    x: 10,
-	                    y: 60
-	                  }),
-	                  popper: {}
-	                });
-
-	                let url_popper_para = cy.popper({
-	                  content: () => {
-	                    // Create an input box
-	                    var para = document.createElement("p");
-	                    node = document.createTextNode("Splunk HEC Server URL.");
-	                    para.setAttribute("id", "url_para_desc");
-	                    para.setAttribute("style", "z-index:9999")
-	                    para.appendChild(node);
-	                    document.body.appendChild(para);
-	                    return para;
-	                  },
-	                  renderedPosition: () => ({
-	                    x: 290,
-	                    y: 60
-	                  }),
-	                  popper: {}
-	                });
-
-	                let submit_button = cy.popper({
-	                  content: () => {
-	                    // Create an input box
-	                    var btn = document.createElement("BUTTON");
-	                    btn.setAttribute("style", "z-index:9999")
-	                    btn.setAttribute("id", "submit_button")
-	                    btn.innerHTML = "Submit";
-	                    document.body.appendChild(btn);
-	                    btn.addEventListener("click", function () {
-	                      httpRequest()
-	                    });
-	                    return btn;
-	                  },
-	                  renderedPosition: () => ({
-	                    x: 10,
-	                    y: 100
-	                  }),
-	                  popper: {}
-	                });
-
-	                let close_button = cy.popper({
-	                  content: () => {
-	                    // Create an input box
-	                    var btn = document.createElement("BUTTON");
-	                    btn.setAttribute("style", "z-index:9999")
-	                    btn.setAttribute("id", "close_button")
-	                    btn.innerHTML = "Submit";
-	                    document.body.appendChild(btn);
-	                    btn.addEventListener("click", function () {
-	                      deleteElement('close_button')
-	                      deleteElement('submit_button')
-	                      deleteElement('url_para_desc')
-	                      deleteElement('url_code')
-	                      deleteElement('hec_para_desc')
-	                      deleteElement('hec_code')
-	                    });
-	                    return btn;
-	                  },
-	                  renderedPosition: () => ({
-	                    x: 10,
-	                    y: 100
-	                  }),
-	                  popper: {}
-	                });
-	*/
-	  
+	                myModal.show(); // Launch it!  
 
 	                break;
 
@@ -1562,6 +1295,16 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            // Delete the search box
 	            var element = document.getElementById(elementId);
 	            element.remove(element);
+	          }
+
+	          function makeid() {
+	            var result = '';
+	            var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+	            var charactersLength = characters.length;
+	            for (var i = 0; i < 20; i++) {
+	              result += characters.charAt(Math.floor(Math.random() * charactersLength));
+	            }
+	            return result;
 	          }
 
 	          function displayMessage(time, message) {
@@ -1590,12 +1333,67 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            full_message = {
 	              "event": {
 	                "description": description,
-	                "message": message
-	              }
+	                "graph_info": message,
+	                "graph_id": makeid()
+	              },
+	              "sourcetype": "cyto:graph"
 	            };
 	            xhttp.open("POST", url, true);
 	            xhttp.setRequestHeader("Authorization", full_hec);
 	            xhttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+	            xhttp.onload = function () {
+	              // If a non hard error occurs or success
+	              responseText = JSON.parse(xhttp.responseText)
+	              // Now we initialize the Modal itself
+	              var myModal = new Modal("modal1", {
+	                title: "Save State Status",
+	                backdrop: 'static',
+	                keyboard: false,
+	                destroyOnHide: true,
+	                type: 'normal'
+	              });
+	              /*
+	              $(myModal.$el).on("hide", function() {
+	              })*/
+	              myModal.body
+	                .append($('<p><b>Response</b> : ' + responseText.text + ' </p>'));
+
+	              myModal.footer.append($('<button>').attr({
+	                type: 'button',
+	                'data-dismiss': 'modal'
+	              }).addClass('btn btn-primary').text('Close').on('click', function () {
+	                // Do Nothing Function
+
+	              }))
+	              myModal.show(); // Launch it!
+
+	            };
+	            xhttp.onerror = function () {
+	              // If a hard error occurs
+	              // Now we initialize the Modal itself
+	              var myModal = new Modal("modal1", {
+	                title: "Error Occured in Saving State",
+	                backdrop: 'static',
+	                keyboard: false,
+	                destroyOnHide: true,
+	                type: 'normal'
+	              });
+	              /*
+	              $(myModal.$el).on("hide", function() {
+	              })*/
+	              myModal.body
+	                .append($('<p>Error occured.  Check the Javascript console for the details.</p>'));
+
+	              myModal.footer.append($('<button>').attr({
+	                type: 'button',
+	                'data-dismiss': 'modal'
+	              }).addClass('btn btn-primary').text('Close').on('click', function () {
+	                // Do Nothing Function
+
+	              }))
+	              myModal.show(); // Launch it!
+
+	            }
 	            xhttp.send(JSON.stringify(full_message));
 
 	          }
@@ -1603,6 +1401,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	          function toggleModal() {
 	            modal.classList.toggle("show-modal");
 	          }
+
 
 	        },
 

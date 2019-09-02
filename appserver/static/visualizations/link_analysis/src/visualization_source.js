@@ -4,6 +4,8 @@
   SANKEY Diagram - Used filtering functions
   Unique List - https://medium.com/front-end-weekly/getting-unique-values-in-javascript-arrays-17063080f836
   SA-devforall - Modal Ideas
+  Random Hash Creator - https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
+
   */
   define([
       'jquery',
@@ -54,6 +56,9 @@
       var preRemove;
       var initialRun;
       var element_preRemove;
+      var boxedNodes;
+      var bgColor;
+      var textColor;
 
 
 
@@ -63,12 +68,11 @@
           SplunkVisualizationBase.prototype.initialize.apply(this, arguments);
           this.$el = $(this.el);
 
-          /*if (SplunkVisualizationUtils.getCurrentTheme && SplunkVisualizationUtils.getCurrentTheme() === 'dark'){
-            this.$el.addClass('dark');
+        if (SplunkVisualizationUtils.getCurrentTheme && SplunkVisualizationUtils.getCurrentTheme() === 'dark'){
+            bgColor = "#212527";
+            textColor = "#ffffff";
           }
-          */
-          // Initialization logic goes here
-
+        
         },
 
 
@@ -417,95 +421,6 @@
               .attr('id', 'cy')
               .attr('active-bg-color', '#555');
           }
-          /*
-          modal_main = d3.select("div.main-section-body")
-            .append("div")
-            .attr("class","modal hide fade")
-            .attr("id", "myModal");
-
-            modal_header = modal_main.append("div")
-            .attr("class","modal-header");
-            
-            modal_header.append("button")
-            .attr("class","close")
-            .attr("data-dismiss","modal")
-            .attr("aria-hidden","true")
-            .text("testText");
-
-            modal_header
-            .append("h3")
-            .text("Header Text");
-          
-            modal_main
-            .append("div")
-            .attr("class","modal-body")
-            .append("p")
-            .text("paragraph");
-
-
-            modal_footer =
-            modal_main
-            .append("div")
-            .attr("class","modal-footer");
-
-            modal_footer
-            .append("a")
-            .attr("href", "#")
-            .attr("class","btn")
-            .text("Close");
-
-            modal_footer
-            .append("a")
-            .attr("href", "#")
-            .attr("class","btn btn-primary")
-            .text("Save");
-
-
-
-            <div class="modal hide fade" id="myModal">
-<div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-    <h3>Modal header</h3>
-</div>
-<div class="modal-body">
-    <p>One fine body…</p>
-</div>
-<div class="modal-footer">
-    <a href="#" class="btn">Close</a>
-    <a href="#" class="btn btn-primary">Save changes</a>
-</div>
-
-            .attr("id", "myModal")
-          d3.select("body").
-          select("div.main-section-body")
-            .append("div")
-            .attr("class", "modal")
-            .append("div")
-            .attr("class", "modal-content")
-            .append("span")
-            .attr("class", "close-button")
-            .text("Close")
-            .append("h1")
-            .text("Hello world");
-            var modal = document.querySelector(".modal");
-            var closeButton = document.querySelector(".close-button");
-
-
-            <div style="position: relative; top: auto; left: auto; margin: 0 auto 20px; z-index: 1; max-width: 100%;" class="modal">
-                  <div class="modal-header">
-                    <button aria-hidden="true" data-dismiss="modal" class="close" type="button">×</button>
-                    <h3>Modal header</h3>
-                  </div>
-                  <div class="modal-body">
-                    <p>One fine body…</p>
-                  </div>
-                  <div class="modal-footer">
-                    <a class="btn" href="#">Close</a>
-                    <a class="btn btn-primary" href="#">Save changes</a>
-                  </div>
-            </div>
-
-*/
 
           // Add Cytoscape Element
           var cy = cytoscape({
@@ -624,11 +539,27 @@
               'control-point-weight': '0.5', // '0': curve towards source node, '1': towards target node.
 
             })
+            if (bgColor){
           cy.style()
             .selector('core')
             .style({
-              'active-bg-color': '#555',
+              'background': bgColor
             })
+            cy.style()
+            .selector('edge')
+            .style({
+              'color': textColor,
+              'text-background-color': bgColor
+            })
+
+            cy.style()
+            .selector('node')
+            .style({
+              'color': textColor
+            })
+
+
+          }
 
           if (this.format_info.line_label) {
             cy.style()
@@ -941,8 +872,7 @@
             });
             cy.cxtmenu({
               selector: 'core',
-              commands: [
-                {
+              commands: [{
                   content: 'Search Nodes',
                   select: function () {
                     // Now we initialize the Modal itself
@@ -979,7 +909,7 @@
                     myModal.show(); // Launch it!
                   },
                 },
-                
+
                 {
                   content: 'Menu',
                   select: function (ele) {
@@ -1213,9 +1143,9 @@
 
             switch (x.value) {
               case "Delete Highlighted Items":
-                // // deleteElement('menu_list')
+
                 deleteElement('menu_select')
-                cy.remove(boxedNodes);
+
                 var element_del = cy.elements(cy.$('.highlighted'));
                 // Remove elements
                 cy.remove(element_del);
@@ -1270,17 +1200,17 @@
                   .append($('<p>This menu allows you to save state of your diagram</p>'));
 
 
-                  myModal.body
+                myModal.body
                   .append($('<h4>HTTP Event Code</h4>'));
                 myModal.body
-                  .append($('<input type="text" id="http_event_code" name="http_event_code" required>'));
+                  .append($('<input type="text" autocomplete="on" id="http_event_code" name="http_event_code" required>'));
 
-                  myModal.body
+                myModal.body
                   .append($('<h4>HTTP Destination</h4>'));
                 myModal.body
-                  .append($('<input type="text" id="http_destination" name="http_destination" value="https://yoursplunkserver.com:8089/services/collector" required>'));
+                  .append($('<input type="text" id="http_destination" autocomplete="on" name="http_destination" value="https://yoursplunkserver.com:8089/services/collector" required>'));
 
-                  myModal.body
+                myModal.body
                   .append($('<h4>Description</h4>'));
                 myModal.body
                   .append($('<input type="text" id="http_description" name="http_description" value="This graph shows ...." required>'));
@@ -1291,7 +1221,6 @@
                   'data-dismiss': 'modal'
                 }).addClass('btn btn-primary').text('Submit').on('click', function (modalEle) {
                   // Post to HEC 
-                  debugger; 
                   var description = document.getElementById("http_description").value;
                   var http_event_code = document.getElementById("http_event_code").value;
                   var http_destination = document.getElementById("http_destination").value;
@@ -1323,6 +1252,16 @@
             element.remove(element);
           }
 
+          function makeid() {
+            var result = '';
+            var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            var charactersLength = characters.length;
+            for (var i = 0; i < 20; i++) {
+              result += characters.charAt(Math.floor(Math.random() * charactersLength));
+            }
+            return result;
+          }
+
           function displayMessage(time, message) {
             let popper2 = cy.popper({
               content: () => {
@@ -1349,12 +1288,67 @@
             full_message = {
               "event": {
                 "description": description,
-                "graph_info": message
-              }
+                "graph_info": message,
+                "graph_id": makeid()
+              },
+              "sourcetype": "cyto:graph"
             };
             xhttp.open("POST", url, true);
             xhttp.setRequestHeader("Authorization", full_hec);
             xhttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhttp.onload = function () {
+              // If a non hard error occurs or success
+              responseText = JSON.parse(xhttp.responseText)
+              // Now we initialize the Modal itself
+              var myModal = new Modal("modal1", {
+                title: "Save State Status",
+                backdrop: 'static',
+                keyboard: false,
+                destroyOnHide: true,
+                type: 'normal'
+              });
+              /*
+              $(myModal.$el).on("hide", function() {
+              })*/
+              myModal.body
+                .append($('<p><b>Response</b> : ' + responseText.text + ' </p>'));
+
+              myModal.footer.append($('<button>').attr({
+                type: 'button',
+                'data-dismiss': 'modal'
+              }).addClass('btn btn-primary').text('Close').on('click', function () {
+                // Do Nothing Function
+
+              }))
+              myModal.show(); // Launch it!
+
+            };
+            xhttp.onerror = function () {
+              // If a hard error occurs
+              // Now we initialize the Modal itself
+              var myModal = new Modal("modal1", {
+                title: "Error Occured in Saving State",
+                backdrop: 'static',
+                keyboard: false,
+                destroyOnHide: true,
+                type: 'normal'
+              });
+              /*
+              $(myModal.$el).on("hide", function() {
+              })*/
+              myModal.body
+                .append($('<p>Error occured.  Check the Javascript console for the details.</p>'));
+
+              myModal.footer.append($('<button>').attr({
+                type: 'button',
+                'data-dismiss': 'modal'
+              }).addClass('btn btn-primary').text('Close').on('click', function () {
+                // Do Nothing Function
+
+              }))
+              myModal.show(); // Launch it!
+
+            }
             xhttp.send(JSON.stringify(full_message));
 
           }
@@ -1362,6 +1356,7 @@
           function toggleModal() {
             modal.classList.toggle("show-modal");
           }
+
 
         },
 
