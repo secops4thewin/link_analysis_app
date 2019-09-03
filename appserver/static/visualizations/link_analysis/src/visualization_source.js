@@ -19,7 +19,11 @@
       'cytoscape-dagre',
       'cytoscape-klay',
       'd3',
-      'Modal.js'
+      'Modal.js',
+      'cytoscape-spread',
+      'weaverjs',
+      'cytoscape-cose-bilkent',
+      // Euler cannot work with anything above 300 Nodes
       // Add required assets to this list
     ],
     function (
@@ -34,7 +38,10 @@
       dagre,
       klay,
       d3,
-      Modal
+      Modal, 
+      spread, 
+      weaver,
+      coseBilkent
       // Backbone
 
     ) {
@@ -45,6 +52,8 @@
       dagre(cytoscape);
       popper(cytoscape);
       klay(cytoscape);
+      spread( cytoscape, weaver );
+      coseBilkent( cytoscape ); // register extension
 
       // var master = mvc.Components.get('master');
       // var modal = new ModalView();
@@ -59,6 +68,7 @@
       var boxedNodes;
       var bgColor;
       var textColor;
+      var removeNodesByCount;
 
 
 
@@ -94,10 +104,6 @@
                 this.pathAlgo = this._getEscapedProperty('pathAlgo', config);
                 break;
 
-              case "display.visualizations.custom.link_analysis_app.link_analysis.disableImages":
-                this.disableImages = SplunkVisualizationUtils.normalizeBoolean(this._getEscapedProperty('disableImages', config));
-                break;
-
               case "display.visualizations.custom.link_analysis_app.link_analysis.directed":
                 this.directed = SplunkVisualizationUtils.normalizeBoolean(this._getEscapedProperty('directed', config));
                 break;
@@ -106,9 +112,6 @@
                 this.layoutStyle = this._getEscapedProperty('layoutStyle', config) || 'fcose';
                 this.directed = SplunkVisualizationUtils.normalizeBoolean(this._getEscapedProperty('directed', config), {
                   default: false
-                });
-                this.disableImages = SplunkVisualizationUtils.normalizeBoolean(this._getEscapedProperty('disableImages', config), {
-                  default: true
                 });
                 this.pathAlgo = this._getEscapedProperty('pathAlgo', config) || 'dijkstra';
 
@@ -120,9 +123,6 @@
             this.directed = SplunkVisualizationUtils.normalizeBoolean(this._getEscapedProperty('directed', config), {
               default: false
             });
-            this.disableImages = SplunkVisualizationUtils.normalizeBoolean(this._getEscapedProperty('disableImages', config), {
-              default: true
-            });
             this.pathAlgo = this._getEscapedProperty('pathAlgo', config) || 'dijkstra';
             return;
           }
@@ -132,8 +132,6 @@
 
         onConfigChange: function (configChanges, previousConfig) {
           // Get Configuration Data
-          var disableImages_key = "display.visualizations.custom.link_analysis_app.link_analysis.disableImages";
-
           // if the previous config is the same as the configured menu item.  Do Nothing.  Handling first time opening the format menu
           if (Object.keys(previousConfig).length == 1 && previousConfig["display.visualizations.custom.drilldown"] == "all" && Object.keys(configChanges).length > 1) {
             //this._getConfigParams(configChanges);
@@ -142,12 +140,9 @@
           // if the previous config is the same as the configured menu item.  Do Nothing.  Handling first time opening the format menu
           else if (previousConfig["display.visualizations.custom.link_analysis_app.link_analysis.directed"] == this.directed.toString() &&
             previousConfig["display.visualizations.custom.link_analysis_app.link_analysis.pathAlgo"] == this.pathAlgo.toString() &&
-            previousConfig["display.visualizations.custom.link_analysis_app.link_analysis.layoutStyle"] == this.layoutStyle.toString() &&
-            previousConfig[disableImages_key] == undefined) {
+            previousConfig["display.visualizations.custom.link_analysis_app.link_analysis.layoutStyle"] == this.layoutStyle.toString() ) {
             return;
-          } else if (previousConfig[disableImages_key] == undefined) {
-            return;
-          }
+          } 
 
           // If Config has been updated then re-run invalidateUpdateView()
           else {
@@ -162,9 +157,6 @@
                 this._getConfigParams(configChanges);
                 break;
 
-              case "display.visualizations.custom.link_analysis_app.link_analysis.disableImages":
-                this.invalidateUpdateView();
-                break;
 
               case "display.visualizations.custom.link_analysis_app.link_analysis.directed":
 
@@ -183,8 +175,7 @@
         // Optionally implement to format data returned from search.
         // The returned object will be passed to updateView as 'data'
         formatData: function (data, config) {
-          stringIcon = {};
-          regexIcon = {};
+
           this.format_info = {};
           // Create nodes dictionary for ID creation purposes.
           var nodesByName = {};
@@ -198,37 +189,6 @@
 
           var linksArray = [];
 
-          $.ajax({
-            url: "/static/app/link_analysis_app/icons.csv",
-            type: 'get',
-            dataType: "text",
-            async: false,
-            success: function (data) {
-              var csvSplit = data.split('\n');
-              for (var x = 1; x < csvSplit.length; x++) {
-                var searchType = csvSplit[x].split(',')[0];
-                var fieldValue = csvSplit[x].split(',')[1];
-                var icon = csvSplit[x].split(',')[2];
-                if (searchType == "string") {
-                  // If the pattern is a string search
-                  stringIcon[fieldValue] = icon;
-
-                } else if (searchType == "regex") {
-                  // If the pattern is a regex pattern
-                  regexIcon[x] = {
-                    "fieldValue": fieldValue,
-                    "icon": icon
-                  }
-                }
-              }
-            },
-            error: function (jqXHR) {
-              console.log(jqXHR);
-            }
-          })
-
-          this.stringIcon = stringIcon;
-          this.regexIcon = regexIcon;
           this._getConfigParams(config);
 
           // Update group items
@@ -383,12 +343,6 @@
           // Create pattern for matching header rows / fields to match nodeXX
           var pattern = /node\d{2}$/i;
 
-          // String Icon Dictionary
-          var stringIcon = this.stringIcon;
-
-          // String Icon Dictionary
-          var regexIcon = this.regexIcon;
-
           // Create a color gradient for highlighting groups
           var color = d3.scaleOrdinal(d3.schemeCategory20);
 
@@ -482,15 +436,9 @@
             node_id = "n" + n;
             nodeById(node, node_id)
             node_color = color(nodesByName[node].group);
-            if (datum.length < 1000) {
-              nodeIcon = searchIcon(node);
-            } else {
-              nodeIcon = ""
-            }
             cy.add({
               data: {
                 id: node_id,
-                background: nodeIcon,
                 weight: 1,
                 label: node,
                 color: node_color
@@ -616,15 +564,7 @@
             }).update();
 
 
-          // Highlighted Class
-          if (this.disableImages == false) {
-            cy.style()
-              .selector('node')
-              .style({
-                'background-image': 'data(background)',
-                'background-fit': 'contain'
-              }).update();
-          }
+
           runLayout(this.layoutStyle)
 
           // End Styling
@@ -708,10 +648,16 @@
               // a motion blur effect that increases perceived performance for little or no cost
               motionBlur: true,
               nodeDimensionsIncludeLabels: true,
-
+              nodeRepulsion: 20000,
+              nodeOverlap: 300,
+              // separation amount between nodes
+              nodeSeparation: 300,
+                // Nesting factor (multiplier) to compute ideal edge length for nested edges
+            nestingFactor: 0.1,
+            // Gravity force (constant)
+            gravity: 0.1,
 
             };
-
 
             var coseBilkentOptions = {
               stop: function () {
@@ -725,14 +671,16 @@
               //randomize: true,
               // Type of layout animation. The option set is {'during', 'end', false}
               animate: false,
-              fit: true,
+              fit: false,
 
               hideEdgesOnViewport: true,
               hideLabelsOnViewport: true,
               // interpolate on high density displays instead of increasing resolution
               pixelRatio: 1,
               // a motion blur effect that increases perceived performance for little or no cost
-              motionBlur: true
+              motionBlur: true,
+              nodeRepulsion: 20000,
+              nodeOverlap: 300
             };
 
             switch (layoutStyle) {
@@ -741,6 +689,28 @@
                 break;
               case "cose-bilkent":
                 cy.layout(coseBilkentOptions).run();
+                break;
+
+            
+              case "spread":
+                      cy.layout({
+                        stop: function () {
+                          cy.removeAllListeners();
+                          launchPostProcess();
+                        },
+                        name: layoutStyle,
+                        nodeDimensionsIncludeLabels: true,
+                        // Performance Options
+                        hideEdgesOnViewport: true,
+                        hideLabelsOnViewport: true,
+                        // interpolate on high density displays instead of increasing resolution
+                        pixelRatio: 1,
+                        // a motion blur effect that increases perceived performance for little or no cost
+                        motionBlur: true,
+                        animate: false,
+                        fit: false
+                      }).run();
+      
                 break;
 
               default:
@@ -757,7 +727,11 @@
                   // interpolate on high density displays instead of increasing resolution
                   pixelRatio: 1,
                   // a motion blur effect that increases perceived performance for little or no cost
-                  motionBlur: true
+                  motionBlur: true,
+                  animate: false,
+                  nodeRepulsion: 4096,
+                  nodeOverlap: 4,
+                  fit: false
                 }).run();
                 break;
             }
@@ -809,7 +783,7 @@
             document.body.appendChild(menuDataList);
 
             // Add Menu Items
-            menu_list_items = ['Delete Highlighted Items', 'Delete Non-Highlighted Items', 'Refresh', 'Clear Formatting', 'Save State'];
+            menu_list_items = ['Delete Highlighted Items', 'Delete Non-Highlighted Items', 'Refresh', 'Clear Formatting', 'Save State', 'Remove Nodes by Count'];
             menu_list_items = menu_list_items.sort()
             var list = document.getElementById('menu_list');
             menu_list_items.forEach(function (item) {
@@ -837,15 +811,6 @@
                   enabled: true
                 },
                 {
-                  content: 'Modal',
-                  select: function (ele) {
-                    toggleModal();
-                    closeButton.addEventListener("click", toggleModal);
-                    window.addEventListener("click", windowOnClick);
-                  },
-                  enabled: true
-                },
-                {
                   content: "Single Path Select",
                   select: function (ele) {
                     if (start) {
@@ -865,6 +830,8 @@
                     n_successors = ele.successors()
                     jointNodes = n_predecessors.union(n_successors);
                     jointNodes.addClass('highlighted')
+                    highlightAllPathsFrom(start)
+
                   }
                 }
 
@@ -999,6 +966,8 @@
           // Begin - Path Highlighting Function
 
           function highlightNextEle(start_id, end_id) {
+            console.log(directedGlobal);
+            debugger;
             // Highlight Elements
             startid_hash = "#" + start_id
             endid_hash = "#" + end_id
@@ -1074,6 +1043,7 @@
           // Begin - Higlight All Paths From.
           function highlightAllPathsFrom(start_node) {
             start_node = "#" + start_node;
+            console.log(directedGlobal);
             var bfs = cy.elements().bfs(start_node, 1, directedGlobal);
             for (var x = 0; x < bfs.path.length; x++) {
               var el = bfs.path[x];
@@ -1102,41 +1072,6 @@
 
           function nodeById(name, node_id) {
             return nodesByName[name].id || (nodesByName[name].id = node_id);
-          }
-
-          // Search Icon Function
-          function searchIcon(searchFieldValue) {
-            // If there is a direct match for the field value
-            if (stringIcon[searchFieldValue]) {
-              return stringIcon[searchFieldValue]
-            }
-            // Iterate through regexes to try and match the string
-            else if (regexIcon) {
-              // For each regex in list
-              for (i = 0; i < Object.keys(regexIcon).length + 1; i++) {
-                // Check if regex is valid if not throw message
-
-                if (regexIcon[i]) {
-                  try {
-                    var re = RegExp(regexIcon[i].fieldValue);
-                  } catch (e) {
-                    throw new SplunkVisualizationBase.VisualizationError(
-                      'Invalid Regex of ' + escapeHtml(regexIcon[i].fieldValue))
-                  }
-
-                  // Check if the regex matches
-                  if (re.test(searchFieldValue)) {
-                    // If so return the icon
-                    return regexIcon[i].icon
-                  }
-                } else {
-                  return "/static/app/link_analysis_app/default.png"
-                }
-              }
-            } else {
-              // No matches so return a default image.
-              return "/static/app/link_analysis_app/default.png"
-            }
           }
 
           function returnMenu(ele, x) {
@@ -1231,9 +1166,61 @@
 
                 break;
 
-              case "Close":
-                // deleteElement('menu_list')
-                deleteElement('menu_select')
+              case "Remove Nodes by Count":
+                 // deleteElement('menu_list')
+                 deleteElement('menu_select')
+
+                 // Create Modal for HTTP Save State
+                 var myModal = new Modal("modal1", {
+                   title: "Remove Nodes By Count",
+                   backdrop: 'static',
+                   keyboard: false,
+                   destroyOnHide: true,
+                   type: 'normal'
+                 });
+                 /*
+                 $(myModal.$el).on("hide", function() {
+                 })*/
+                 myModal.body
+                   .append($('<p>This menu allows you to delete nodes that have less than or greater than a number you specify of children or parent nodes recursively</p>'));
+ 
+                 myModal.body
+                   .append($('<select name="lt_gt"><option value ="less_than">Less Than</option><option value ="gt_than">Greater Than</option>'));
+                 myModal.body
+                   .append($('<input type="text" autocomplete="on" id="number" name="number" required>')); 
+ 
+                 myModal.footer.append($('<button>').attr({
+                   type: 'button',
+                   'data-dismiss': 'modal'
+                 }).addClass('btn btn-primary').text('Submit').on('click', function (modalEle) {
+                  var lt_gt = document.getElementById("lt_gt").value;
+                  var numberInput = document.getElementById("number").value;
+                  if(Number(numberInput)){
+                    if (lt_gt == "less_than"){
+                    Object.keys(nodesByName).forEach(function (key){
+                      if (nodesByName[key].children.length < numberInput ){
+                        removeNodesByCount.union(nodesByName[key].children)
+                      }
+                    })
+                  }
+                  else if(lt_gt == "gt_than"){
+                    if (nodesByName[key].children.length > numberInput )
+                    {
+                      removeNodesByCount.union(nodesByName[key].children)
+                    }
+
+                  }
+                  // Finally
+                  cy.remove(removeNodesByCount);
+                }
+
+                  else(
+                    console.log("Error not a number")
+                  )
+                  
+                 }))
+                 myModal.show(); // Launch it!  
+ 
                 break;
 
               default:
