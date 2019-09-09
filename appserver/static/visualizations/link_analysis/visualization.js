@@ -69,6 +69,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      __webpack_require__(313),
 	      __webpack_require__(314),
 	      __webpack_require__(315),
+	      __webpack_require__(316)
+
 	      // Euler cannot work with anything above 300 Nodes
 	      // Add required assets to this list
 	    ], __WEBPACK_AMD_DEFINE_RESULT__ = function (
@@ -83,10 +85,11 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      dagre,
 	      klay,
 	      d3,
-	      Modal, 
-	      spread, 
+	      Modal,
+	      spread,
 	      weaver,
-	      coseBilkent
+	      coseBilkent,
+	      dblclick
 	      // Backbone
 
 	    ) {
@@ -97,8 +100,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      dagre(cytoscape);
 	      popper(cytoscape);
 	      klay(cytoscape);
-	      spread( cytoscape, weaver );
-	      coseBilkent( cytoscape ); // register extension
+	      spread(cytoscape, weaver);
+	      coseBilkent(cytoscape); // register extension
+	      dblclick( cytoscape );
 
 	      // var master = mvc.Components.get('master');
 	      // var modal = new ModalView();
@@ -115,21 +119,18 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	      var textColor;
 	      var removeNodesByCount;
 
-
-
 	      return SplunkVisualizationBase.extend({
 
 	        initialize: function () {
 	          SplunkVisualizationBase.prototype.initialize.apply(this, arguments);
 	          this.$el = $(this.el);
 
-	        if (SplunkVisualizationUtils.getCurrentTheme && SplunkVisualizationUtils.getCurrentTheme() === 'dark'){
+	          if (SplunkVisualizationUtils.getCurrentTheme && SplunkVisualizationUtils.getCurrentTheme() === 'dark') {
 	            bgColor = "#212527";
 	            textColor = "#ffffff";
 	          }
-	        
-	        },
 
+	        },
 
 	        _getEscapedProperty: function (name, config) {
 	          var propertyValue = config[this.getPropertyNamespaceInfo().propertyNamespace + name];
@@ -164,6 +165,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            }
 	            return;
 	          } else {
+	            // debugger;
 	            this.layoutStyle = this._getEscapedProperty('layoutStyle', config) || 'fcose';
 	            this.directed = SplunkVisualizationUtils.normalizeBoolean(this._getEscapedProperty('directed', config), {
 	              default: false
@@ -177,17 +179,21 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	        onConfigChange: function (configChanges, previousConfig) {
 	          // Get Configuration Data
+	          // debugger;
 	          // if the previous config is the same as the configured menu item.  Do Nothing.  Handling first time opening the format menu
 	          if (Object.keys(previousConfig).length == 1 && previousConfig["display.visualizations.custom.drilldown"] == "all" && Object.keys(configChanges).length > 1) {
 	            //this._getConfigParams(configChanges);
 	            return;
 	          }
+
+	          /*
 	          // if the previous config is the same as the configured menu item.  Do Nothing.  Handling first time opening the format menu
 	          else if (previousConfig["display.visualizations.custom.link_analysis_app.link_analysis.directed"] == this.directed.toString() &&
 	            previousConfig["display.visualizations.custom.link_analysis_app.link_analysis.pathAlgo"] == this.pathAlgo.toString() &&
 	            previousConfig["display.visualizations.custom.link_analysis_app.link_analysis.layoutStyle"] == this.layoutStyle.toString() ) {
 	            return;
 	          } 
+	*/
 
 	          // If Config has been updated then re-run invalidateUpdateView()
 	          else {
@@ -527,29 +533,27 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	              'text-valign"': 'top',
 	              'text-halign': 'center',
 	              'min-zoomed-font-size': '1',
-	              'control-point-distance': '30px',
-	              'control-point-step-size': 40,
 	              'control-point-weight': '0.5', // '0': curve towards source node, '1': towards target node.
 
 	            })
-	            if (bgColor){
-	          cy.style()
-	            .selector('core')
-	            .style({
-	              'background': bgColor
-	            })
+	          if (bgColor) {
 	            cy.style()
-	            .selector('edge')
-	            .style({
-	              'color': textColor,
-	              'text-background-color': bgColor
-	            })
+	              .selector('core')
+	              .style({
+	                'background': bgColor
+	              })
+	            cy.style()
+	              .selector('edge')
+	              .style({
+	                'color': textColor,
+	                'text-background-color': bgColor
+	              })
 
 	            cy.style()
-	            .selector('node')
-	            .style({
-	              'color': textColor
-	            })
+	              .selector('node')
+	              .style({
+	                'color': textColor
+	              })
 
 
 	          }
@@ -697,10 +701,10 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	              nodeOverlap: 300,
 	              // separation amount between nodes
 	              nodeSeparation: 300,
-	                // Nesting factor (multiplier) to compute ideal edge length for nested edges
-	            nestingFactor: 0.1,
-	            // Gravity force (constant)
-	            gravity: 0.1,
+	              // Nesting factor (multiplier) to compute ideal edge length for nested edges
+	              nestingFactor: 0.1,
+	              // Gravity force (constant)
+	              gravity: 0.1,
 
 	            };
 
@@ -736,26 +740,26 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                cy.layout(coseBilkentOptions).run();
 	                break;
 
-	            
+
 	              case "spread":
-	                      cy.layout({
-	                        stop: function () {
-	                          cy.removeAllListeners();
-	                          launchPostProcess();
-	                        },
-	                        name: layoutStyle,
-	                        nodeDimensionsIncludeLabels: true,
-	                        // Performance Options
-	                        hideEdgesOnViewport: true,
-	                        hideLabelsOnViewport: true,
-	                        // interpolate on high density displays instead of increasing resolution
-	                        pixelRatio: 1,
-	                        // a motion blur effect that increases perceived performance for little or no cost
-	                        motionBlur: true,
-	                        animate: false,
-	                        fit: false
-	                      }).run();
-	      
+	                cy.layout({
+	                  stop: function () {
+	                    cy.removeAllListeners();
+	                    launchPostProcess();
+	                  },
+	                  name: layoutStyle,
+	                  nodeDimensionsIncludeLabels: true,
+	                  // Performance Options
+	                  hideEdgesOnViewport: true,
+	                  hideLabelsOnViewport: true,
+	                  // interpolate on high density displays instead of increasing resolution
+	                  pixelRatio: 1,
+	                  // a motion blur effect that increases perceived performance for little or no cost
+	                  motionBlur: true,
+	                  animate: false,
+	                  fit: false
+	                }).run();
+
 	                break;
 
 	              default:
@@ -807,6 +811,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	              cy.$(elemsWChildren).addClass('nodehighlightedchildren')
 	            }
 
+	            // If the node list and menus do not exist, add them.
+	            if (document.getElementById('node_list') == undefined){
 	            // Create a Datalist for the search nodes
 	            var nodeListDataList = document.createElement("datalist");
 	            nodeListDataList.setAttribute("id", "node_list");
@@ -819,8 +825,6 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	              option.value = node;
 	              list.appendChild(option);
 	            });
-
-
 
 	            // Create a list element
 	            var menuDataList = document.createElement("datalist");
@@ -837,7 +841,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	              list.appendChild(option);
 	            });
 
-
+	          }
 	            // Add box highlight function
 	            cy.on('box', function (e) {
 	              let node = e.target;
@@ -848,13 +852,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            // Begin - Add Menu for nodes and background
 	            cy.cxtmenu({
 	              selector: 'node, edge',
-	              commands: [{
-	                  content: 'Collapse',
-	                  select: function (ele) {
-	                    apiCollapse.collapseRecursively(ele);
-	                  },
-	                  enabled: true
-	                },
+	              commands: [
 	                {
 	                  content: "Single Path Select",
 	                  select: function (ele) {
@@ -882,6 +880,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	              ]
 	            });
+
 	            cy.cxtmenu({
 	              selector: 'core',
 	              commands: [{
@@ -983,6 +982,15 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 
 	          }
+	          
+	          // Specify interval (in milliseconds)
+	          const interval = 300;
+	          cy.dblclick(interval);
+
+	          cy.on('dblclick', function(e){
+	            debugger;
+	            this.drilldownToCategory('_raw', 'test',e);
+	          }.bind(this));
 
 	          // End - Add Menu for nodes and background
 
@@ -1012,7 +1020,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	          function highlightNextEle(start_id, end_id) {
 	            console.log(directedGlobal);
-	            debugger;
+	            // debugger;
 	            // Highlight Elements
 	            startid_hash = "#" + start_id
 	            endid_hash = "#" + end_id
@@ -1212,60 +1220,64 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                break;
 
 	              case "Remove Nodes by Count":
-	                 // deleteElement('menu_list')
-	                 deleteElement('menu_select')
+	                // deleteElement('menu_list')
+	                deleteElement('menu_select')
 
-	                 // Create Modal for HTTP Save State
-	                 var myModal = new Modal("modal1", {
-	                   title: "Remove Nodes By Count",
-	                   backdrop: 'static',
-	                   keyboard: false,
-	                   destroyOnHide: true,
-	                   type: 'normal'
-	                 });
-	                 /*
-	                 $(myModal.$el).on("hide", function() {
-	                 })*/
-	                 myModal.body
-	                   .append($('<p>This menu allows you to delete nodes that have less than or greater than a number you specify of children or parent nodes recursively</p>'));
-	 
-	                 myModal.body
-	                   .append($('<select name="lt_gt"><option value ="less_than">Less Than</option><option value ="gt_than">Greater Than</option>'));
-	                 myModal.body
-	                   .append($('<input type="text" autocomplete="on" id="number" name="number" required>')); 
-	 
-	                 myModal.footer.append($('<button>').attr({
-	                   type: 'button',
-	                   'data-dismiss': 'modal'
-	                 }).addClass('btn btn-primary').text('Submit').on('click', function (modalEle) {
+	                // Create Modal for HTTP Save State
+	                var myModal = new Modal("modal1", {
+	                  title: "Remove Nodes By Count",
+	                  backdrop: 'static',
+	                  keyboard: false,
+	                  destroyOnHide: true,
+	                  type: 'normal'
+	                });
+	                /*
+	                $(myModal.$el).on("hide", function() {
+	                })*/
+	                myModal.body
+	                  .append($('<p>This menu allows you to delete nodes that have less than or greater than a number you specify of children or parent nodes recursively</p>'));
+
+	                myModal.body
+	                  .append($('<select id="lt_gt" name="lt_gt"><option value ="less_than">Less Than</option><option value ="gt_than">Greater Than</option>'));
+	                myModal.body
+	                  .append($('<input type="text" autocomplete="on" id="number" name="number" required>'));
+
+	                myModal.footer.append($('<button>').attr({
+	                  type: 'button',
+	                  'data-dismiss': 'modal'
+	                }).addClass('btn btn-primary').text('Submit').on('click', function (modalEle) {
 	                  var lt_gt = document.getElementById("lt_gt").value;
 	                  var numberInput = document.getElementById("number").value;
-	                  if(Number(numberInput)){
-	                    if (lt_gt == "less_than"){
-	                    Object.keys(nodesByName).forEach(function (key){
-	                      if (nodesByName[key].children.length < numberInput ){
+	                  if (Number(numberInput)) {
+	                    if (lt_gt == "less_than") {
+	                      removeNodesByCount = cy.collection()
+	                      Object.keys(nodesByName).forEach(function (key) {
+
+	                        if (nodesByName[key].children && nodesByName[key].children.length < numberInput) {
+	                          // debugger;
+	                          removeNodesByCount.union(nodesByName[key].children)
+	                        } else {
+	                          // Delete the node
+	                          node_id = "#" + nodesByName[key].id
+	                          removeNodesByCount.union(cy.$(node_id))
+	                        }
+	                      })
+	                    } else if (lt_gt == "gt_than") {
+	                      if (nodesByName[key].children && nodesByName[key].children.length > numberInput) {
 	                        removeNodesByCount.union(nodesByName[key].children)
 	                      }
-	                    })
-	                  }
-	                  else if(lt_gt == "gt_than"){
-	                    if (nodesByName[key].children.length > numberInput )
-	                    {
-	                      removeNodesByCount.union(nodesByName[key].children)
+
 	                    }
-
-	                  }
-	                  // Finally
-	                  cy.remove(removeNodesByCount);
-	                }
-
-	                  else(
+	                    // Finally
+	                    // debugger;
+	                    cy.remove(removeNodesByCount);
+	                  } else(
 	                    console.log("Error not a number")
 	                  )
-	                  
-	                 }))
-	                 myModal.show(); // Launch it!  
-	 
+
+	                }))
+	                myModal.show(); // Launch it!  
+
 	                break;
 
 	              default:
@@ -1400,6 +1412,17 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            count: 10000
 	          });
 	        },
+
+	        drilldownToCategory: function(categoryName, categoryFieldValue, browserEvent) {
+	          var data = {};
+	          data[categoryName] = categoryFieldValue;
+	      
+	          this.drilldown({
+	              action: SplunkVisualizationBase.FIELD_VALUE_DRILLDOWN,
+	              data: data
+	          }, browserEvent);
+	      },
+
 
 	        // Override to respond to re-sizing events
 	        reflow: function () {}
@@ -103224,6 +103247,59 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	/***/ })
 	/******/ ]);
 	});
+
+/***/ }),
+/* 316 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	__webpack_require__(294);
+
+	// https://docs.microsoft.com/en-us/windows/desktop/api/winuser/nf-winuser-setdoubleclicktime
+	var INTERVAL = 500;
+	function extension(interval) {
+	    if (interval === void 0) { interval = INTERVAL; }
+	    var clicked = null;
+	    this.on('click', function (evt) {
+	        if (clicked && clicked === evt.target) {
+	            clicked = null;
+	            evt.preventDefault();
+	            evt.stopPropagation();
+	            evt.target.emit('dblclick', [evt]);
+	        }
+	        else {
+	            clicked = evt.target;
+	            setTimeout(function () {
+	                if (clicked && clicked === evt.target) {
+	                    clicked = null;
+	                    evt.target.emit('dblclick:timeout', [evt]);
+	                }
+	            }, interval);
+	        }
+	    });
+	    return this; // chainability
+	}
+
+	function register(cy) {
+	    if (!cy) {
+	        return;
+	    }
+	    // Initialize extension
+	    // Register extension
+	    var extensionName = 'dblclick';
+	    cy('core', extensionName, extension);
+	    // cy('collection', extensionName, extension);
+	    // cy('layout', extensionName, extension);
+	    // cy('renderer', extensionName, extension);
+	}
+	if (typeof window.cytoscape !== 'undefined') {
+	    register(window.cytoscape);
+	}
+
+	module.exports = register;
+	//# sourceMappingURL=index.common.js.map
+
 
 /***/ })
 /******/ ])});;

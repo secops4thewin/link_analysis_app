@@ -19,6 +19,7 @@
     "cytoscape-cose-bilkent": "^4.0.0",
     "cytoscape-cxtmenu": "*",
     "cytoscape-dagre": "*",
+    "cytoscape-dblclick": "^0.3.1",
     "cytoscape-fcose": "*",
     "cytoscape-klay": "*",
     "cytoscape-popper": "*",

@@ -1,26 +1,23 @@
 <form script="./cytoStateN.js" stylesheet="cytostate.css"  theme="light">
   <label>Link Analysis Historical View</label>
-  <search id="base_search_cyto">
-    <query>index=cyto graph_id=* sourcetype=cyto:graph earliest=-365d</query>
-  </search>
-  <fieldset submitButton="false">
-    <input type="dropdown" token="cytoId">
+  <fieldset submitButton="true">
+    <input type="dropdown" token="cytoId" searchWhenChanged="true">
       <label>Previous State</label>
       <fieldForLabel>desc_time</fieldForLabel>
       <fieldForValue>graph_id</fieldForValue>
       <search>
-        <query>index=cyto graph_id=* earliest=-365d sourcetype=cyto:graph earliest=-365d | eval time = strftime(_time, "%c") | strcat description " : " time " : " graph_id desc_time | dedup desc_time</query>
-        <earliest>-7d@h</earliest>
+        <query>index=cyto graph_id=*  sourcetype=cyto:graph | eval time = strftime(_time, "%c") | strcat description " : " time " : " graph_id desc_time | dedup desc_time</query>
+        <earliest>-365d@d</earliest>
         <latest>now</latest>
       </search>
     </input>
   </fieldset>
   <row>
     <panel depends="$cytoId$">
-       <search base="base_search_cyto" id="cytoState">
-           <query>
-             | search $cytoId$
-           </query>
+       <search id="cytoState">
+          <query>index=cyto sourcetype=cyto:graph graph_id=$cytoId$</query>
+          <earliest>-365d@h</earliest>
+          <latest>now</latest>
 </search>
       <title>Load Former State</title>
       <html>

@@ -16,7 +16,7 @@ require(["jquery",
         var desiredSearchName = "cytoState";
         var cyto_viz;
         debugger;
-        var sm = splunkjs.mvc.Components.getInstance(desiredSearchName)
+        var sm = splunkjs.mvc.Components.getInstance(desiredSearchName);
         sm.on('search:done', function (properties) {
             var searchName = properties.content.request.label;
             if (properties.content.resultCount == 0) {
@@ -70,7 +70,7 @@ require(["jquery",
                         }).update();
 
 
-
+                        debugger;
                     layout.run();
                 })
             }
