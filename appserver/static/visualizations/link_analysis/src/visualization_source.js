@@ -57,7 +57,7 @@
       klay(cytoscape);
       spread(cytoscape, weaver);
       coseBilkent(cytoscape); // register extension
-      dblclick( cytoscape );
+      dblclick(cytoscape);
 
       // var master = mvc.Components.get('master');
       // var modal = new ModalView();
@@ -73,7 +73,8 @@
       var bgColor;
       var textColor;
       var removeNodesByCount;
-
+      var recursiveLookup;
+      var graphStateForFocus;
       return SplunkVisualizationBase.extend({
 
         initialize: function () {
@@ -115,6 +116,11 @@
                   default: false
                 });
                 this.pathAlgo = this._getEscapedProperty('pathAlgo', config) || 'dijkstra';
+                this.recursiveLookup = SplunkVisualizationUtils.normalizeBoolean(this._getEscapedProperty('recursiveLookup', config), {
+                  default: false
+                });
+                recursiveLookup = this.recursiveLookup;
+
 
                 break;
             }
@@ -126,6 +132,12 @@
               default: false
             });
             this.pathAlgo = this._getEscapedProperty('pathAlgo', config) || 'dijkstra';
+            this.recursiveLookup = SplunkVisualizationUtils.normalizeBoolean(this._getEscapedProperty('recursiveLookup', config), {
+              default: false
+            });
+            recursiveLookup = this.recursiveLookup;
+
+
             return;
           }
 
@@ -140,15 +152,6 @@
             //this._getConfigParams(configChanges);
             return;
           }
-
-          /*
-          // if the previous config is the same as the configured menu item.  Do Nothing.  Handling first time opening the format menu
-          else if (previousConfig["display.visualizations.custom.link_analysis_app.link_analysis.directed"] == this.directed.toString() &&
-            previousConfig["display.visualizations.custom.link_analysis_app.link_analysis.pathAlgo"] == this.pathAlgo.toString() &&
-            previousConfig["display.visualizations.custom.link_analysis_app.link_analysis.layoutStyle"] == this.layoutStyle.toString() ) {
-            return;
-          } 
-*/
 
           // If Config has been updated then re-run invalidateUpdateView()
           else {
@@ -487,7 +490,6 @@
               'min-zoomed-font-size': '20',
               'text-valign"': 'top',
               'text-halign': 'center',
-              'min-zoomed-font-size': '1',
               'control-point-weight': '0.5', // '0': curve towards source node, '1': towards target node.
 
             })
@@ -533,7 +535,7 @@
             .selector('node')
             .style({
               'background-color': 'data(color)',
-              'min-zoomed-font-size': '20'
+              'min-zoomed-font-size': '15'
             })
 
           // Node Highlighting
@@ -599,8 +601,14 @@
 
                   node_id = "#" + nodesByName[preRemove].id;
                   initial_node = cy.$(node_id);
-                  successor_preRemove = initial_node.successors()
-                  predecessor_preRemove = initial_node.predecessors()
+
+                  if (recursiveLookup == false) {
+                    successor_preRemove = initial_node.outgoers()
+                    predecessor_preRemove = initial_node.incomers()
+                  } else {
+                    successor_preRemove = initial_node.successors()
+                    predecessor_preRemove = initial_node.predecessors()
+                  }
                   jointNodes_preRemove = successor_preRemove.union(predecessor_preRemove);
                   nodesByName[preRemove].children = jointNodes_preRemove;
 
@@ -609,9 +617,14 @@
 
                   // Iterate through nodes and add predecessors and successors to the nodeByName array
                   for (var x = 0; x < element_preRemove.length; x++) {
-                    if (element_preRemove[x].successors().length > 1 || element_preRemove[x].predecessors().length > 1) {
-                      var successor_preRemove = element_preRemove[x].successors()
-                      var predecessor_preRemove = element_preRemove[x].predecessors()
+                    if (element_preRemove[x].outgoers().length > 1 || element_preRemove[x].incomers().length > 1) {
+                      if (recursiveLookup == false) {
+                        var successor_preRemove = element_preRemove[x].outgoers()
+                        var predecessor_preRemove = element_preRemove[x].incomers()
+                      } else {
+                        var successor_preRemove = element_preRemove[x].successors()
+                        var predecessor_preRemove = element_preRemove[x].predecessors()
+                      }
                       var jointNodes_preRemove = successor_preRemove.union(predecessor_preRemove);
                       node_id = "#" + element_preRemove[x].id();
                       node_label = cy.$(node_id).data('label');
@@ -709,10 +722,15 @@
                   hideLabelsOnViewport: true,
                   // interpolate on high density displays instead of increasing resolution
                   pixelRatio: 1,
+                  expandingFactor: 10,
                   // a motion blur effect that increases perceived performance for little or no cost
                   motionBlur: true,
+                  prelayout: {
+                    name: 'klay'
+                  }, // Layout options for the first phase
                   animate: false,
-                  fit: false
+                  fit: false,
+                  randomize: true
                 }).run();
 
                 break;
@@ -767,36 +785,36 @@
             }
 
             // If the node list and menus do not exist, add them.
-            if (document.getElementById('node_list') == undefined){
-            // Create a Datalist for the search nodes
-            var nodeListDataList = document.createElement("datalist");
-            nodeListDataList.setAttribute("id", "node_list");
-            document.body.appendChild(nodeListDataList);
+            if (document.getElementById('node_list') == undefined) {
+              // Create a Datalist for the search nodes
+              var nodeListDataList = document.createElement("datalist");
+              nodeListDataList.setAttribute("id", "node_list");
+              document.body.appendChild(nodeListDataList);
 
-            // Add nodes to list
-            var list = document.getElementById('node_list');
-            nodesUnique.forEach(function (node) {
-              var option = document.createElement('option');
-              option.value = node;
-              list.appendChild(option);
-            });
+              // Add nodes to list
+              var list = document.getElementById('node_list');
+              nodesUnique.forEach(function (node) {
+                var option = document.createElement('option');
+                option.value = node;
+                list.appendChild(option);
+              });
 
-            // Create a list element
-            var menuDataList = document.createElement("datalist");
-            menuDataList.setAttribute("id", "menu_list");
-            document.body.appendChild(menuDataList);
+              // Create a list element
+              var menuDataList = document.createElement("datalist");
+              menuDataList.setAttribute("id", "menu_list");
+              document.body.appendChild(menuDataList);
 
-            // Add Menu Items
-            menu_list_items = ['Delete Highlighted Items', 'Delete Non-Highlighted Items', 'Refresh', 'Clear Formatting', 'Save State', 'Remove Nodes by Count'];
-            menu_list_items = menu_list_items.sort()
-            var list = document.getElementById('menu_list');
-            menu_list_items.forEach(function (item) {
-              var option = document.createElement('option');
-              option.value = item;
-              list.appendChild(option);
-            });
+              // Add Menu Items
+              menu_list_items = ['Delete Highlighted Items', 'Delete Non-Highlighted Items', 'Refresh', 'Clear Formatting', 'Save State', 'Remove Nodes by Count'];
+              menu_list_items = menu_list_items.sort()
+              var list = document.getElementById('menu_list');
+              menu_list_items.forEach(function (item) {
+                var option = document.createElement('option');
+                option.value = item;
+                list.appendChild(option);
+              });
 
-          }
+            }
             // Add box highlight function
             cy.on('box', function (e) {
               let node = e.target;
@@ -807,8 +825,7 @@
             // Begin - Add Menu for nodes and background
             cy.cxtmenu({
               selector: 'node, edge',
-              commands: [
-                {
+              commands: [{
                   content: "Single Path Select",
                   select: function (ele) {
                     if (start) {
@@ -831,7 +848,112 @@
                     highlightAllPathsFrom(start)
 
                   }
-                }
+                },
+                {
+                  content: 'Focus',
+                  select: function (ele) {
+                    var collection;
+                    // Save the current state of the graph
+                    graphStateForFocus = cy.json();
+                    // Find the node if of the currently selected node
+                    node_id = "#" + ele.id();
+                    node = cy.$(node_id)
+                    positionOfNode = ele.position()
+
+                    focus_Node_Outgoers = ele.outgoers()
+                    focus_Node_Incomers = ele.incomers()
+                    collection = focus_Node_Outgoers.union(focus_Node_Incomers);
+                    collection = collection.union(node);
+                    notInCollection = cy.elements().not(cy.$(collection));
+
+                    var layout = collection.layout({
+                      name: 'concentric',
+                      fit: false,
+                      animate: true,
+                      spacingFactor: 4,
+                      minNodeSpacing: 20,
+                      avoidOverlap: true,
+                      boundingBox: {
+                        x1: positionOfNode.x - 1,
+                        x2: positionOfNode.x + 1,
+                        y1: positionOfNode.y - 1,
+                        y2: positionOfNode.y + 1
+                      },
+                      concentric: function (ele) {
+                        debugger;
+                        if (ele.same(node)) {
+                          return 4;
+                        } else {
+                          return 1;
+                        }
+                      },
+                      levelWidth: function () {
+                        return 1;
+                      },
+
+
+                    });
+
+                    // Run the layout
+                    layout.run();
+                    // Update the style to make all nodes opacity 1
+                    cy.style()
+                      .selector(notInCollection)
+                      .style({
+                        'opacity': 0.1
+                      }).update()
+
+
+                      cy.animate({
+                        zoom: 1,
+                        center: {
+                          eles: node
+                        }
+                      },
+                      {duration: 1000
+
+                      });
+
+                    // Create a popper menu to allow resetting the layout
+                    let popper2 = cy.popper({
+                      content: () => {
+                        // Create an input box
+                        var x = document.createElement("button");
+                        x.setAttribute("name", "reset_view");
+                        x.setAttribute("id", "reset_view");
+                        x.setAttribute("class", "btn  btn-primary")
+                        x.innerHTML = "Reset";
+                        x.setAttribute("style", "z-index:9999");
+                        x.addEventListener("click", function (e) {
+                          // Add the saved graph as the current json
+                          cy.json(graphStateForFocus)
+                          var layout = cy.layout({
+                            name: 'preset',
+                            animation: true,
+                            animationEasing: 'linear',
+                            animationDuration: 1000
+
+                          });
+                          layout.run();
+                          // Delete the button after using
+                          var element = document.getElementById('reset_view');
+                          element.parentNode.removeChild(element);
+                        }, false);;
+                        document.body.appendChild(x);
+
+                        return x;
+                      },
+                      renderedPosition: () => ({
+                        x: 10,
+                        y: 10
+                      }),
+                      popper: {
+
+                      } // my popper options here
+                    });
+
+                  },
+                },
 
               ]
             });
@@ -937,14 +1059,14 @@
 
 
           }
-          
+
           // Specify interval (in milliseconds)
           const interval = 300;
           cy.dblclick(interval);
 
-          cy.on('dblclick', function(e){
+          cy.on('dblclick', function (e) {
             debugger;
-            this.drilldownToCategory('_raw', 'test',e);
+            this.drilldownToCategory('_raw', 'test', e);
           }.bind(this));
 
           // End - Add Menu for nodes and background
@@ -955,10 +1077,16 @@
             var node_value = document.getElementById("node_search").value;
             if (nodesByName[node_value]) {
               node_id = "#" + nodesByName[node_value].id;
-              // Set the zoom level
-              cy.zoom(1);
-              // Center on the node
-              cy.center(node_id);
+              // Zoom in to the node naturally
+              cy.animate({
+                zoom: 1,
+                center: {
+                  eles: node_id
+                }
+              },
+              {duration: 1000
+
+              });
               // Adjust view to ensure that the node is ~ centre
               cy.$(node_id).flashClass('nodehighlighted', 2500);
 
@@ -1356,7 +1484,6 @@
             modal.classList.toggle("show-modal");
           }
 
-
         },
 
 
@@ -1368,15 +1495,15 @@
           });
         },
 
-        drilldownToCategory: function(categoryName, categoryFieldValue, browserEvent) {
+        drilldownToCategory: function (categoryName, categoryFieldValue, browserEvent) {
           var data = {};
           data[categoryName] = categoryFieldValue;
-      
+
           this.drilldown({
-              action: SplunkVisualizationBase.FIELD_VALUE_DRILLDOWN,
-              data: data
+            action: SplunkVisualizationBase.FIELD_VALUE_DRILLDOWN,
+            data: data
           }, browserEvent);
-      },
+        },
 
 
         // Override to respond to re-sizing events

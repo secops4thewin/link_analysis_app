@@ -1,14 +1,4 @@
-[views/link_analysis_historical_view]
+[views/beta]
 owner = admin
 version = 7.2.1
-modtime = 1567563272.543343000
-
-[views/test]
-owner = admin
-version = 7.2.1
-modtime = 1567330324.139407000
-
-[props/cyto%3Agraph]
-owner = admin
-version = 7.2.1
-modtime = 1567557849.430291000
+modtime = 1570748909.051053000

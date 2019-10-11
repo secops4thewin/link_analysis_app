@@ -1,21 +1,18 @@
 # Link Analysis App For Splunk #
 This app provides a seperate visualisation framework for doing force directed visualisation with additional functionality.
-
 For more about the visualisation framework visit here.
 https://github.com/cytoscape/cytoscape.js
-
 ### Installation Instructions
-
 1. Download the app and unzip to $SPLUNK_HOME/etc/apps on your Search Head
 2. Restart Splunk
 3. Generate a search that has a 'source', 'target' and optionally a count. 
 
 ### Basic Search Examples
-
 - index=firewall action=allowed | stats count by src_ip, dest_ip | table src_ip, dest_ip, count
 - sourcetype=access_combined | stats count by src_ip,uri_path
 
 ### Extended Search Examples
+
 #### Optional Fields
 - line_label - To specify the line label of an edge
 ```index=firewall action=allowed | stats count by src_ip, dest_ip, dest_port | rename dest_port as line_label```
@@ -29,14 +26,12 @@ https://github.com/cytoscape/cytoscape.js
 - preFilter - Allows you to prefilter your graph and remove all nodes that are connected to the node specified in the field.
 ***Delete all nodes from the graph that are not children of 192.168.1.1***
 
-
 ### Configuration Options
 
 #### Format Menu - Vizualization Style
 
 ###### Layout Style
 Layout styles allow you to change the format of the graph.  Not every format is useful for every data type.  Test with all of the layouts.  Some are also faster than others (Grid is the fastest)
-
   - FCose (Default)
   - Grid
   - Circle
@@ -46,7 +41,6 @@ Layout styles allow you to change the format of the graph.  Not every format is 
   - Breadthfirst
   - Spread
   - Cose
-  - Cose-Bilkent
 
 ###### Path Selection Algorithm
 This app allows you to build paths between nodes.  The path algorithm is customisable to give you different outcomes.
@@ -64,7 +58,6 @@ When performing path highlighting, you can honor the direction of the path by se
 If you click and hold on a node, a context relevant menu will pop-up with the following options.
 - Hlt All Paths (Highlight All Paths)
 This option allows you to highlight all paths from the node recursively honoring the direction set in the format menu.  It will add a highlighted class to the nodes selected
-
 - Single Path Select
 This option allows you to draw a single path using the Algorithm in the format menu and honoring the direction set.  To use this option, press and hold on the starting node and select ```Single Path Select``` then click and hold the target node and select ```Single Path Select```.  If a path can be found the nodes will be highlighted.
 
@@ -85,10 +78,8 @@ An option exists in the framework to allow you to save the state of the graph.  
 - HTTP Event Collector Configured with an index of ```cyto```
 - A valid certificate for your HTTP Event Collector
 - CORS Configured to allow requests
-
 This call is performed via javascript so requires something similar to the following setup.
 https://answers.splunk.com/answers/766107/how-do-i-send-data-to-http-event-collector-via-jav.html
-
 
 ### Bugs / Missing Docos
 Please report any bugs to this page.  I accept pull requests. Alternatively hit me up on twitter @MickeyPerre
@@ -98,3 +89,9 @@ Post any feature requests as issues and I will look around to them.  My only fee
 
 ### Tested on
 **Mac**
+
+### License
+- This app uses D3 with the following license conditions
+[Here](https://github.com/d3/d3/blob/master/LICENSE)
+- This app uses Cytoscape js with the following license conditions
+[Here](https://raw.githubusercontent.com/cytoscape/cytoscape.js/master/LICENSE)
