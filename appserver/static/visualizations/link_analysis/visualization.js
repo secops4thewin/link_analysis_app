@@ -96,48 +96,72 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	      // Load menu extension
 	      cxtmenu(cytoscape);
+	      // Load FCose Layout Extension
 	      fcose(cytoscape);
+	      // Load Dagre Layout Extension
 	      dagre(cytoscape);
+	      // Load Popper Extension
 	      popper(cytoscape);
+	      // Load Dagre Layout Extension
 	      klay(cytoscape);
+	      // Load Spread Layout Extension
 	      spread(cytoscape, weaver);
+	      // Load Cose Bilkent Layout Extension
 	      coseBilkent(cytoscape); // register extension
 	      dblclick(cytoscape);
 
-	      // var master = mvc.Components.get('master');
-	      // var modal = new ModalView();
 
+	      /*
+	      Initiate Global Variables for use throughout code
+	      */
 
+	      // Prefilter variable for use to prefilter the graph
 	      var preFilter;
+	      // Variable to specify whether direction in path finding is honored
 	      var directedGlobal;
+	      // What path finding algorithm is used
 	      var pathAlgoGlobal;
+	      // If items are to be preRemoved before rendering
 	      var preRemove;
+	      // Variable to define whether the graph is being loaded for the first time or note
 	      var initialRun;
+	      // A collection of elements that are being removed
 	      var element_preRemove;
+	      // A variable to store highlighted nodes
 	      var boxedNodes;
+	      // Background color
 	      var bgColor;
+	      // Text color
 	      var textColor;
+	      // Not in use - A number to use when removing nodes by children / parent count
 	      var removeNodesByCount;
+	      // Whether to recursively add nodes in the graph
 	      var recursiveLookup;
+	      // The existing layout prior to initiating the focus function
 	      var graphStateForFocus;
+	      // A variable to tell the graph that it is zoomed in and to not honor mouse over actions on edges
+	      var isZoomedIn;
+	      // The incrementer for a dynamic class that is used in edge styling
+	      var edgeSearchColorNum = 0;
+
 	      return SplunkVisualizationBase.extend({
 
 	        initialize: function () {
 	          SplunkVisualizationBase.prototype.initialize.apply(this, arguments);
 	          this.$el = $(this.el);
-
+	          // If the theme is dark mode set the correct background color and text color.
 	          if (SplunkVisualizationUtils.getCurrentTheme && SplunkVisualizationUtils.getCurrentTheme() === 'dark') {
 	            bgColor = "#212527";
 	            textColor = "#ffffff";
 	          }
 
 	        },
-
+	        // Escape properties that are passed as configuration items
 	        _getEscapedProperty: function (name, config) {
 	          var propertyValue = config[this.getPropertyNamespaceInfo().propertyNamespace + name];
 	          return SplunkVisualizationUtils.escapeHtml(propertyValue);
 	        },
-
+	        // Get the configuration parameters
 	        _getConfigParams: function (config) {
 	          changedConfig = Object.keys(config)[0];
 	          // If there is only one configuration change (This happens after the first click of formatter menu)
@@ -156,6 +180,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                break;
 
 	              default:
+	                // Set default options for the console if this is a fresh load or something else happened.
 	                this.layoutStyle = this._getEscapedProperty('layoutStyle', config) || 'fcose';
 	                this.directed = SplunkVisualizationUtils.normalizeBoolean(this._getEscapedProperty('directed', config), {
 	                  default: false
@@ -171,7 +196,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            }
 	            return;
 	          } else {
-	            // debugger;
+	            // Set default options for the console if this is a fresh load or something else happened.
 	            this.layoutStyle = this._getEscapedProperty('layoutStyle', config) || 'fcose';
 	            this.directed = SplunkVisualizationUtils.normalizeBoolean(this._getEscapedProperty('directed', config), {
 	              default: false
@@ -191,7 +216,6 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	        onConfigChange: function (configChanges, previousConfig) {
 	          // Get Configuration Data
-	          // debugger;
 	          // if the previous config is the same as the configured menu item.  Do Nothing.  Handling first time opening the format menu
 	          if (Object.keys(previousConfig).length == 1 && previousConfig["display.visualizations.custom.drilldown"] == "all" && Object.keys(configChanges).length > 1) {
 	            //this._getConfigParams(configChanges);
@@ -229,10 +253,11 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        // Optionally implement to format data returned from search.
 	        // The returned object will be passed to updateView as 'data'
 	        formatData: function (data, config) {
-
+	          // A dictionary for formatting
 	          this.format_info = {};
 	          // Create nodes dictionary for ID creation purposes.
 	          var nodesByName = {};
+	          // A dictionary for formatting
 	          format_info = {};
 	          // Create an empty group array to allow group assignment
 	          group_list = [];
@@ -240,13 +265,14 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	          datum = data.rows;
 	          // Create empty array to place all of the nodes in
 	          var nodesArray = [];
-
+	          // Create empty array to place all edges / links in
 	          var linksArray = [];
-
+	          // Get updated configuration parameters
 	          this._getConfigParams(config);
 
 	          // Update group items
 	          // For each field in the output if the regex matches the pattern variable push it to the columns array
+
 	          // Set x to 0 so the line numbers match up.
 	          x = 0;
 	          data.fields.forEach(function (column) {
@@ -528,11 +554,13 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	              'width': 3,
 	              'edge-text-rotation': 'autorotate',
 	              'target-arrow-shape': 'triangle',
+	              'arrow-scale': 2,
 	              'curve-style': 'bezier',
 	              'text-background-color': 'white',
+	              'text-opacity': 0.1,
 	              'text-background-opacity': 0.8,
 	              'text-background-shape': 'roundrectangle',
-	              'min-zoomed-font-size': '20',
+	              'min-zoomed-font-size': '15',
 	              'text-valign"': 'top',
 	              'text-halign': 'center',
 	              'control-point-weight': '0.5', // '0': curve towards source node, '1': towards target node.
@@ -745,6 +773,47 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	              nodeOverlap: 300
 	            };
 
+	            var layoutCoseOptions = {
+	              stop: function () {
+	                cy.removeAllListeners();
+	                launchPostProcess();
+	              },
+	              name: 'cose',
+	              animate: false,
+	              padding: 100,
+	              fit: false,
+	              nodeOverlap: 30,
+	              idealEdgeLength: function (edge) {
+	                switch (edge.data().type) {
+	                  case 1:
+	                    return 30;
+	                  case 2:
+	                  case 3:
+	                    return 120;
+	                  case 0:
+	                  default:
+	                    return 120;
+	                }
+	              },
+	              edgeElasticity: function (edge) {
+	                switch (edge.data().type) {
+	                  case 1:
+	                    return 50;
+	                  case 2:
+	                  case 3:
+	                    return 200;
+	                  case 0:
+	                  default:
+	                    return 200;
+	                }
+	              },
+	              nestingFactor: 1.2,
+	              initialTemp: 1000,
+	              coolingFactor: 0.99,
+	              minTemp: 1.0,
+	              gravity: 1.4
+	            };
+
 	            switch (layoutStyle) {
 	              case "fcose":
 	                cy.layout(fcoseOptions).run();
@@ -752,6 +821,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	              case "cose-bilkent":
 	                cy.layout(coseBilkentOptions).run();
 	                break;
+
+	              case "cose":
+	                cy.layout(layoutCoseOptions).run();
 
 
 	              case "spread":
@@ -850,7 +922,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	              document.body.appendChild(menuDataList);
 
 	              // Add Menu Items
-	              menu_list_items = ['Delete Highlighted Items', 'Delete Non-Highlighted Items', 'Refresh', 'Clear Formatting', 'Save State', 'Remove Nodes by Count'];
+	              menu_list_items = ['Delete Highlighted Items', 'Delete Non-Highlighted Items', 'Refresh', 'Clear Formatting', 'Save State', 'Search Edges'];
 	              menu_list_items = menu_list_items.sort()
 	              var list = document.getElementById('menu_list');
 	              menu_list_items.forEach(function (item) {
@@ -869,7 +941,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	            // Begin - Add Menu for nodes and background
 	            cy.cxtmenu({
-	              selector: 'node, edge',
+	              selector: 'node',
 	              commands: [{
 	                  content: "Single Path Select",
 	                  select: function (ele) {
@@ -904,7 +976,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                    node_id = "#" + ele.id();
 	                    node = cy.$(node_id)
 	                    positionOfNode = ele.position()
-
+	                    isZoomedIn = true;
 	                    focus_Node_Outgoers = ele.outgoers()
 	                    focus_Node_Incomers = ele.incomers()
 	                    collection = focus_Node_Outgoers.union(focus_Node_Incomers);
@@ -925,7 +997,6 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                        y2: positionOfNode.y + 1
 	                      },
 	                      concentric: function (ele) {
-	                        debugger;
 	                        if (ele.same(node)) {
 	                          return 4;
 	                        } else {
@@ -945,19 +1016,27 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                    cy.style()
 	                      .selector(notInCollection)
 	                      .style({
-	                        'opacity': 0.1
-	                      }).update()
+	                        'opacity': 0.1,
+	                      })
+
+	                    cy.style()
+	                      .selector(collection)
+	                      .style({
+	                        'text-opacity': 1.0,
+	                        'z-index': 999
+	                      })
+	                      .update()
 
 
-	                      cy.animate({
-	                        zoom: 1,
-	                        center: {
-	                          eles: node
-	                        }
-	                      },
-	                      {duration: 1000
+	                    cy.animate({
+	                      zoom: 1,
+	                      center: {
+	                        eles: node
+	                      }
+	                    }, {
+	                      duration: 1000
 
-	                      });
+	                    });
 
 	                    // Create a popper menu to allow resetting the layout
 	                    let popper2 = cy.popper({
@@ -972,14 +1051,17 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                        x.addEventListener("click", function (e) {
 	                          // Add the saved graph as the current json
 	                          cy.json(graphStateForFocus)
-	                          var layout = cy.layout({
+	                          debugger;
+	                          var layoutStatic = cy.layout({
 	                            name: 'preset',
 	                            animation: true,
 	                            animationEasing: 'linear',
 	                            animationDuration: 1000
 
 	                          });
-	                          layout.run();
+	                          // Prevent mouse over highlight from occuring
+	                          isZoomedIn = undefined;
+	                          layoutStatic.run();
 	                          // Delete the button after using
 	                          var element = document.getElementById('reset_view');
 	                          element.parentNode.removeChild(element);
@@ -1054,9 +1136,6 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                      destroyOnHide: true,
 	                      type: 'normal'
 	                    });
-	                    /*
-	                    $(myModal.$el).on("hide", function() {
-	                    })*/
 	                    myModal.body
 	                      .append($('<p>Select from the list of available functions.</p>'));
 
@@ -1073,7 +1152,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                      type: 'button',
 	                      'data-dismiss': 'modal'
 	                    }).addClass('btn btn-primary').text('Select').on('click', function () {
-	                      // Do Nothing Function  
+	                      // Do Nothing Function
 	                      x = document.getElementById('menu_select')
 	                      returnMenu(ele, x);
 
@@ -1088,6 +1167,34 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            // Set Min Zoom / Max Zoom
 	            cy.minZoom(0.05);
 	            cy.maxZoom(1.5);
+	            var zIndex;
+	            // Set a mouse over and mouse out listener for edges to make them easier to view
+	            cy.on('mouseover', 'edge', function (evt) {
+	              if (isZoomedIn == undefined) {
+	                edge_id = "#" + evt.target.id()
+	                zIndex = cy.$(edge_id).style().zIndex
+	                cy.style()
+	                  .selector(edge_id)
+	                  .style({
+	                    'text-opacity': 1.0,
+	                    'z-index': 999
+	                  }).update()
+	              }
+	            });
+
+	            cy.on('mouseout', 'edge', function (evt) {
+	              if (isZoomedIn == undefined) {
+	                edge_id = "#" + evt.target.id()
+	                cy.style()
+	                  .selector(edge_id)
+	                  .style({
+	                    'text-opacity': 0.1,
+	                    'z-index': zIndex
+	                  }).update()
+	                var zIndez
+	              }
+	            });
+
 
 	            if (preFilter) {
 	              node_id = "#" + nodesByName[preFilter].id;
@@ -1110,7 +1217,6 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	          cy.dblclick(interval);
 
 	          cy.on('dblclick', function (e) {
-	            debugger;
 	            this.drilldownToCategory('_raw', 'test', e);
 	          }.bind(this));
 
@@ -1128,8 +1234,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                center: {
 	                  eles: node_id
 	                }
-	              },
-	              {duration: 1000
+	              }, {
+	                duration: 1000
 
 	              });
 	              // Adjust view to ensure that the node is ~ centre
@@ -1148,7 +1254,6 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	          function highlightNextEle(start_id, end_id) {
 	            console.log(directedGlobal);
-	            // debugger;
 	            // Highlight Elements
 	            startid_hash = "#" + start_id
 	            endid_hash = "#" + end_id
@@ -1274,6 +1379,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                var element_del = cy.elements().not(cy.$('.highlighted'));
 	                // Remove elements
 	                cy.remove(element_del);
+	                cy.elements().removeClass('highlighted');
 
 	                break;
 
@@ -1288,6 +1394,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                deleteElement('menu_select')
 
 	                break;
+
+
 
 	              case "Clear Formatting":
 	                // deleteElement('menu_list')
@@ -1336,14 +1444,14 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                  type: 'button',
 	                  'data-dismiss': 'modal'
 	                }).addClass('btn btn-primary').text('Submit').on('click', function (modalEle) {
-	                  // Post to HEC 
+	                  // Post to HEC
 	                  var description = document.getElementById("http_description").value;
 	                  var http_event_code = document.getElementById("http_event_code").value;
 	                  var http_destination = document.getElementById("http_destination").value;
 	                  httpRequest(http_destination, http_event_code, cy.json(), description);
 
 	                }))
-	                myModal.show(); // Launch it!  
+	                myModal.show(); // Launch it!
 
 	                break;
 
@@ -1382,7 +1490,6 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                      Object.keys(nodesByName).forEach(function (key) {
 
 	                        if (nodesByName[key].children && nodesByName[key].children.length < numberInput) {
-	                          // debugger;
 	                          removeNodesByCount.union(nodesByName[key].children)
 	                        } else {
 	                          // Delete the node
@@ -1397,14 +1504,66 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	                    }
 	                    // Finally
-	                    // debugger;
 	                    cy.remove(removeNodesByCount);
 	                  } else(
 	                    console.log("Error not a number")
 	                  )
 
 	                }))
-	                myModal.show(); // Launch it!  
+	                myModal.show(); // Launch it!
+
+	                break;
+
+	              case "Search Edges":
+	                // deleteElement('menu_list')
+	                deleteElement('menu_select')
+
+	                // Create Modal for HTTP Save State
+	                var myModal = new Modal("modal1", {
+	                  title: "Search Edges",
+	                  backdrop: 'static',
+	                  keyboard: false,
+	                  destroyOnHide: true,
+	                  type: 'normal'
+	                });
+	                /*
+	                $(myModal.$el).on("hide", function() {
+	                })*/
+	                myModal.body
+	                  .append($('<p>This menu allows you to search edges that have a string present on the edge and highlight it in a different colour</p>'));
+	                myModal.body
+	                  .append($('<h4>String To Search (Single Phrase)</h4>'));
+	                myModal.body
+	                  .append($('<input type="text" autocomplete="on" id="edgeTextSearch" name="edgeTextSearch" required>'));
+	                myModal.body
+	                  .append($('<h4>Color to Select</h4>'));
+	                myModal.body
+	                  .append($(' <input type="color" id="style_color" name="head" value="#e66465">'));
+
+	                myModal.footer.append($('<button>').attr({
+	                  type: 'button',
+	                  'data-dismiss': 'modal'
+	                }).addClass('btn btn-primary').text('Submit').on('click', function (modalEle) {
+	                  var description = document.getElementById("edgeTextSearch").value;
+	                  var edgeLineColor = document.getElementById("style_color").value;
+	                  searchString = 'edge[label *= "' + description + '"]';
+	                  searchFilter = cy.filter(searchString);
+	                  // Create new edge search color style and apply it.
+	                  edgeSearchColorNum++
+
+	                  // Used to create the style in CSS Format.
+	                  edgeSearchColorStyle = '.edgeSearchColor' + edgeSearchColorNum.toString()
+	                  // Used to apply the style in CSS format
+	                  edgeSearchColorStyleCy = 'edgeSearchColor' + edgeSearchColorNum.toString()
+	                  // Highlighted Class
+	                  cy.style()
+	                    .selector(edgeSearchColorStyle)
+	                    .style({
+	                      'line-color': edgeLineColor
+	                    }).update();
+	                  cy.$(searchFilter).addClass(edgeSearchColorStyleCy)
+	                }))
+	                myModal.show(); // Launch it!
 
 	                break;
 

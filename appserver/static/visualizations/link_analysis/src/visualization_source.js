@@ -51,48 +51,72 @@
 
       // Load menu extension
       cxtmenu(cytoscape);
+      // Load FCose Layout Extension
       fcose(cytoscape);
+      // Load Dagre Layout Extension
       dagre(cytoscape);
+      // Load Popper Extension
       popper(cytoscape);
+      // Load Dagre Layout Extension
       klay(cytoscape);
+      // Load Spread Layout Extension
       spread(cytoscape, weaver);
+      // Load Cose Bilkent Layout Extension
       coseBilkent(cytoscape); // register extension
       dblclick(cytoscape);
 
-      // var master = mvc.Components.get('master');
-      // var modal = new ModalView();
 
+      /*
+      Initiate Global Variables for use throughout code
+      */
 
+      // Prefilter variable for use to prefilter the graph
       var preFilter;
+      // Variable to specify whether direction in path finding is honored
       var directedGlobal;
+      // What path finding algorithm is used
       var pathAlgoGlobal;
+      // If items are to be preRemoved before rendering
       var preRemove;
+      // Variable to define whether the graph is being loaded for the first time or note
       var initialRun;
+      // A collection of elements that are being removed
       var element_preRemove;
+      // A variable to store highlighted nodes
       var boxedNodes;
+      // Background color
       var bgColor;
+      // Text color
       var textColor;
+      // Not in use - A number to use when removing nodes by children / parent count
       var removeNodesByCount;
+      // Whether to recursively add nodes in the graph
       var recursiveLookup;
+      // The existing layout prior to initiating the focus function
       var graphStateForFocus;
+      // A variable to tell the graph that it is zoomed in and to not honor mouse over actions on edges
+      var isZoomedIn;
+      // The incrementer for a dynamic class that is used in edge styling
+      var edgeSearchColorNum = 0;
+
       return SplunkVisualizationBase.extend({
 
         initialize: function () {
           SplunkVisualizationBase.prototype.initialize.apply(this, arguments);
           this.$el = $(this.el);
-
+          // If the theme is dark mode set the correct background color and text color.
           if (SplunkVisualizationUtils.getCurrentTheme && SplunkVisualizationUtils.getCurrentTheme() === 'dark') {
             bgColor = "#212527";
             textColor = "#ffffff";
           }
 
         },
-
+        // Escape properties that are passed as configuration items
         _getEscapedProperty: function (name, config) {
           var propertyValue = config[this.getPropertyNamespaceInfo().propertyNamespace + name];
           return SplunkVisualizationUtils.escapeHtml(propertyValue);
         },
-
+        // Get the configuration parameters
         _getConfigParams: function (config) {
           changedConfig = Object.keys(config)[0];
           // If there is only one configuration change (This happens after the first click of formatter menu)
@@ -111,6 +135,7 @@
                 break;
 
               default:
+                // Set default options for the console if this is a fresh load or something else happened.
                 this.layoutStyle = this._getEscapedProperty('layoutStyle', config) || 'fcose';
                 this.directed = SplunkVisualizationUtils.normalizeBoolean(this._getEscapedProperty('directed', config), {
                   default: false
@@ -126,7 +151,7 @@
             }
             return;
           } else {
-            // debugger;
+            // Set default options for the console if this is a fresh load or something else happened.
             this.layoutStyle = this._getEscapedProperty('layoutStyle', config) || 'fcose';
             this.directed = SplunkVisualizationUtils.normalizeBoolean(this._getEscapedProperty('directed', config), {
               default: false
@@ -146,7 +171,6 @@
 
         onConfigChange: function (configChanges, previousConfig) {
           // Get Configuration Data
-          // debugger;
           // if the previous config is the same as the configured menu item.  Do Nothing.  Handling first time opening the format menu
           if (Object.keys(previousConfig).length == 1 && previousConfig["display.visualizations.custom.drilldown"] == "all" && Object.keys(configChanges).length > 1) {
             //this._getConfigParams(configChanges);
@@ -184,10 +208,11 @@
         // Optionally implement to format data returned from search.
         // The returned object will be passed to updateView as 'data'
         formatData: function (data, config) {
-
+          // A dictionary for formatting
           this.format_info = {};
           // Create nodes dictionary for ID creation purposes.
           var nodesByName = {};
+          // A dictionary for formatting
           format_info = {};
           // Create an empty group array to allow group assignment
           group_list = [];
@@ -195,47 +220,48 @@
           datum = data.rows;
           // Create empty array to place all of the nodes in
           var nodesArray = [];
-
+          // Create empty array to place all edges / links in
           var linksArray = [];
-
+          // Get updated configuration parameters
           this._getConfigParams(config);
 
           // Update group items
           // For each field in the output if the regex matches the pattern variable push it to the columns array
+
           // Set x to 0 so the line numbers match up.
-          x = 0;
+          formatIterNum = 0;
           data.fields.forEach(function (column) {
             var str = String(column.name);
 
             switch (str) {
               case "line_label":
-                format_info['line_label'] = x;
+                format_info['line_label'] = formatIterNum;
                 break;
 
               case "line_color":
-                format_info['line_color'] = x;
+                format_info['line_color'] = formatIterNum;
                 break;
 
               case "line_colour":
-                format_info['line_color'] = x;
+                format_info['line_color'] = formatIterNum;
                 break;
 
               case "filter_start":
-                format_info['filter_start'] = x;
-                preFilter = data.rows[0][x].toString();
+                format_info['filter_start'] = formatIterNum;
+                preFilter = data.rows[0][formatIterNum].toString();
                 break;
               case "filter_end":
-                format_info['filter_end'] = x;
+                format_info['filter_end'] = formatIterNum;
                 break;
               case "remove":
-                format_info['remove'] = x;
-                preRemove = data.rows[0][x].toString();
+                format_info['remove'] = formatIterNum;
+                preRemove = data.rows[0][formatIterNum].toString();
                 break;
               default:
                 break;
             }
 
-            x++;
+            formatIterNum++;
           });
 
           //For each row in the data push the value of the first and second column into the group_list array.
@@ -340,7 +366,7 @@
           var linksArray = this.linksArray;
 
           // Create a variable of x that is 0 to enable iteration
-          var x = 0;
+          // var x = 0;
 
           var groupCount = this.groupCount;
           // Create variable for line style
@@ -370,10 +396,12 @@
           // Path Algo Global
           pathAlgoGlobal = this.pathAlgo;
 
+          // Grab the width and height of the current element
           var width = this.$el.width()
           var height = this.$el.height()
           // Check to see if cy element exists
           var getCy = document.getElementById("cy")
+          // If the cy element is null then
           if (getCy == null) {
             // Specify a width and height that matches the Splunk console
             // Append an SVG Element
@@ -395,12 +423,13 @@
               }
             }]
           });
-
+          // If a group count exists
           if (groupCount) {
             // Return group counts which have a rollup value of greater than 1
             var groups = groupCount.filter(function (group) {
               return group.value > 1;
             });
+            // Start from the first group and iterate through
             var z = 1;
             groups.forEach(function (groupArrayMember) {
               groupArrayMember.group = z;
@@ -435,14 +464,17 @@
           const unique = (value, index, self) => {
             return self.indexOf(value) === index;
           }
+          // Create a unique list of items from the nodesArray variable
           nodesUnique = nodesArray.filter(unique);
 
           // Create an incrementer variable for node id
           var n = 0;
-          // Foreach unique node add to the node list
 
+          // Foreach unique node add to the node list
           nodesUnique.forEach(function (node) {
+            // Create an incrementer for the node id
             node_id = "n" + n;
+            // Add node and node ID
             nodeById(node, node_id)
             node_color = color(nodesByName[node].group);
             cy.add({
@@ -476,29 +508,38 @@
 
           });
 
-          // Cytoscape Styling
+          /* 
+          Cytoscape Styling of graph
+          */
+
+          // Style the edges
           cy.style()
             .selector('edge')
             .style({
               'width': 3,
               'edge-text-rotation': 'autorotate',
               'target-arrow-shape': 'triangle',
+              'arrow-scale': 2,
               'curve-style': 'bezier',
               'text-background-color': 'white',
+              'text-opacity': 0.1,
               'text-background-opacity': 0.8,
               'text-background-shape': 'roundrectangle',
-              'min-zoomed-font-size': '20',
+              'min-zoomed-font-size': '15',
               'text-valign"': 'top',
               'text-halign': 'center',
               'control-point-weight': '0.5', // '0': curve towards source node, '1': towards target node.
 
             })
+            // If the background color is set then apply the appropriate background color
           if (bgColor) {
             cy.style()
               .selector('core')
               .style({
                 'background': bgColor
               })
+
+              //Apply the edge color as required including the background color
             cy.style()
               .selector('edge')
               .style({
@@ -506,6 +547,7 @@
                 'text-background-color': bgColor
               })
 
+              // Apply the node color as defined in the textColor format option
             cy.style()
               .selector('node')
               .style({
@@ -514,7 +556,7 @@
 
 
           }
-
+          // If there is a line_label field in the Splunk search define it as a data field
           if (this.format_info.line_label) {
             cy.style()
               .selector('edge')
@@ -522,6 +564,9 @@
                 'label': 'data(label)'
               })
           }
+                    
+          // If there is a line_color field in the Splunk search define it as a data field
+
           if (this.format_info.line_color) {
             cy.style()
               .selector('edge')
@@ -538,7 +583,7 @@
               'min-zoomed-font-size': '15'
             })
 
-          // Node Highlighting
+          // Node Highlighting class
           cy.style()
             .selector('.nodehighlighted')
             .style({
@@ -549,6 +594,7 @@
               'transition-duration': '1s'
             });
 
+            // Node highlighted children class (Used when remove field is present)
           cy.style()
             .selector('.nodehighlightedchildren')
             .style({
@@ -558,7 +604,7 @@
             });
 
 
-          // Highlighted Class
+          // Highlighted Class for path highlighted nodes and finally update the style sheet
           cy.style()
             .selector('.highlighted')
             .style({
@@ -569,22 +615,23 @@
               'transition-duration': '0.5s'
             }).update();
 
-
-
-          runLayout(this.layoutStyle)
-
           // End Styling
 
+          // Run the layout
+          runLayout(this.layoutStyle)
 
+          // Run Layout function
           function runLayout(layoutStyle, initialRun = true) {
 
             // If Prefilter has been configured
             if (preFilter) {
+              // If it is the first time the layout has been run for this javascript session
               if (initialRun == true) {
                 if (preFilter.length > 0) {
                   // If the node exists
                   if (nodesByName[preFilter].id) {
                     node_id = "#" + nodesByName[preFilter].id;
+                    // Do a path finding process and add to a collection to highlight all nodes outbound and inbound respecting direction for removal
                     highlightCollection = cy.collection(cy.elements().bfs(node_id, 1, directedGlobal).path);
                     var element_del = cy.elements().not(cy.$(highlightCollection));
                     // Remove elements
@@ -593,23 +640,28 @@
                 }
               }
             }
+            // If the remove is specified and it is also the initial run of the graph
             if (preRemove && initialRun == true) {
-
+              // Check to ensure that the preRemove var is not empty
               if (preRemove.length > 0) {
+                // Check to ensure that the node exists.
                 if (nodesByName[preRemove].id) {
                   var initialRun = false;
 
                   node_id = "#" + nodesByName[preRemove].id;
                   initial_node = cy.$(node_id);
-
+                  // If we are adding children recursively on clicks 
                   if (recursiveLookup == false) {
                     successor_preRemove = initial_node.outgoers()
                     predecessor_preRemove = initial_node.incomers()
+                    // If we are only adding immediate children on clicks 
                   } else {
                     successor_preRemove = initial_node.successors()
                     predecessor_preRemove = initial_node.predecessors()
                   }
+                  // Create a new colletion from aboce
                   jointNodes_preRemove = successor_preRemove.union(predecessor_preRemove);
+                  // Add the children as keys in the nodesByName dictionary
                   nodesByName[preRemove].children = jointNodes_preRemove;
 
                   // Delete the rest and push the element_preRemove to a variable that can be used later for adding back in a compute efficient way.
@@ -635,12 +687,12 @@
                     }
                   }
 
-                  // Remove elements
+                  // Remove all of the elements from the view except the first node.
                   cy.remove(element_preRemove);
                 }
               }
             }
-
+            // Fcose Layout Options
             var fcoseOptions = {
               stop: function () {
                 cy.removeAllListeners();
@@ -648,16 +700,11 @@
               },
               name: layoutStyle,
               quality: "proof",
-              // number of ticks per frame; higher is faster but more jerky
-              //refresh: 300,
-              // Whether to enable incremental mode
-              //randomize: true,
               // Type of layout animation. The option set is {'during', 'end', false}
               animate: false,
               fit: false,
               // For enabling tiling
               tile: true,
-
               hideEdgesOnViewport: true,
               hideLabelsOnViewport: true,
               // interpolate on high density displays instead of increasing resolution
@@ -676,16 +723,13 @@
 
             };
 
+            // Cose Bilkent Layout options
             var coseBilkentOptions = {
               stop: function () {
                 cy.removeAllListeners();
                 launchPostProcess();
               },
               name: layoutStyle,
-              // number of ticks per frame; higher is faster but more jerky
-              //refresh: 300,
-              // Whether to enable incremental mode
-              //randomize: true,
               // Type of layout animation. The option set is {'during', 'end', false}
               animate: false,
               fit: false,
@@ -699,7 +743,48 @@
               nodeRepulsion: 20000,
               nodeOverlap: 300
             };
-
+            // Standard Cose Animation Options
+            var layoutCoseOptions = {
+              stop: function () {
+                cy.removeAllListeners();
+                launchPostProcess();
+              },
+              name: 'cose',
+              animate: false,
+              padding: 100,
+              fit: false,
+              nodeOverlap: 30,
+              idealEdgeLength: function (edge) {
+                switch (edge.data().type) {
+                  case 1:
+                    return 30;
+                  case 2:
+                  case 3:
+                    return 120;
+                  case 0:
+                  default:
+                    return 120;
+                }
+              },
+              edgeElasticity: function (edge) {
+                switch (edge.data().type) {
+                  case 1:
+                    return 50;
+                  case 2:
+                  case 3:
+                    return 200;
+                  case 0:
+                  default:
+                    return 200;
+                }
+              },
+              nestingFactor: 1.2,
+              initialTemp: 1000,
+              coolingFactor: 0.99,
+              minTemp: 1.0,
+              gravity: 1.4
+            };
+            // Switch statement to run different operations depending on the layout selected.
             switch (layoutStyle) {
               case "fcose":
                 cy.layout(fcoseOptions).run();
@@ -707,6 +792,9 @@
               case "cose-bilkent":
                 cy.layout(coseBilkentOptions).run();
                 break;
+
+              case "cose":
+                cy.layout(layoutCoseOptions).run();
 
 
               case "spread":
@@ -805,7 +893,7 @@
               document.body.appendChild(menuDataList);
 
               // Add Menu Items
-              menu_list_items = ['Delete Highlighted Items', 'Delete Non-Highlighted Items', 'Refresh', 'Clear Formatting', 'Save State', 'Remove Nodes by Count'];
+              menu_list_items = ['Delete Highlighted Items', 'Delete Non-Highlighted Items', 'Refresh', 'Clear Formatting', 'Save State', 'Search Edges'];
               menu_list_items = menu_list_items.sort()
               var list = document.getElementById('menu_list');
               menu_list_items.forEach(function (item) {
@@ -824,7 +912,7 @@
 
             // Begin - Add Menu for nodes and background
             cy.cxtmenu({
-              selector: 'node, edge',
+              selector: 'node',
               commands: [{
                   content: "Single Path Select",
                   select: function (ele) {
@@ -859,7 +947,7 @@
                     node_id = "#" + ele.id();
                     node = cy.$(node_id)
                     positionOfNode = ele.position()
-
+                    isZoomedIn = true;
                     focus_Node_Outgoers = ele.outgoers()
                     focus_Node_Incomers = ele.incomers()
                     collection = focus_Node_Outgoers.union(focus_Node_Incomers);
@@ -880,7 +968,6 @@
                         y2: positionOfNode.y + 1
                       },
                       concentric: function (ele) {
-                        debugger;
                         if (ele.same(node)) {
                           return 4;
                         } else {
@@ -900,19 +987,27 @@
                     cy.style()
                       .selector(notInCollection)
                       .style({
-                        'opacity': 0.1
-                      }).update()
+                        'opacity': 0.1,
+                      })
+
+                    cy.style()
+                      .selector(collection)
+                      .style({
+                        'text-opacity': 1.0,
+                        'z-index': 999
+                      })
+                      .update()
 
 
-                      cy.animate({
-                        zoom: 1,
-                        center: {
-                          eles: node
-                        }
-                      },
-                      {duration: 1000
+                    cy.animate({
+                      zoom: 1,
+                      center: {
+                        eles: node
+                      }
+                    }, {
+                      duration: 1000
 
-                      });
+                    });
 
                     // Create a popper menu to allow resetting the layout
                     let popper2 = cy.popper({
@@ -927,14 +1022,17 @@
                         x.addEventListener("click", function (e) {
                           // Add the saved graph as the current json
                           cy.json(graphStateForFocus)
-                          var layout = cy.layout({
+                          debugger;
+                          var layoutStatic = cy.layout({
                             name: 'preset',
                             animation: true,
                             animationEasing: 'linear',
                             animationDuration: 1000
 
                           });
-                          layout.run();
+                          // Prevent mouse over highlight from occuring
+                          isZoomedIn = undefined;
+                          layoutStatic.run();
                           // Delete the button after using
                           var element = document.getElementById('reset_view');
                           element.parentNode.removeChild(element);
@@ -1009,9 +1107,6 @@
                       destroyOnHide: true,
                       type: 'normal'
                     });
-                    /*
-                    $(myModal.$el).on("hide", function() {
-                    })*/
                     myModal.body
                       .append($('<p>Select from the list of available functions.</p>'));
 
@@ -1028,7 +1123,7 @@
                       type: 'button',
                       'data-dismiss': 'modal'
                     }).addClass('btn btn-primary').text('Select').on('click', function () {
-                      // Do Nothing Function  
+                      // Do Nothing Function
                       x = document.getElementById('menu_select')
                       returnMenu(ele, x);
 
@@ -1043,6 +1138,34 @@
             // Set Min Zoom / Max Zoom
             cy.minZoom(0.05);
             cy.maxZoom(1.5);
+            var zIndex;
+            // Set a mouse over and mouse out listener for edges to make them easier to view
+            cy.on('mouseover', 'edge', function (evt) {
+              if (isZoomedIn == undefined) {
+                edge_id = "#" + evt.target.id()
+                zIndex = cy.$(edge_id).style().zIndex
+                cy.style()
+                  .selector(edge_id)
+                  .style({
+                    'text-opacity': 1.0,
+                    'z-index': 999
+                  }).update()
+              }
+            });
+
+            cy.on('mouseout', 'edge', function (evt) {
+              if (isZoomedIn == undefined) {
+                edge_id = "#" + evt.target.id()
+                cy.style()
+                  .selector(edge_id)
+                  .style({
+                    'text-opacity': 0.1,
+                    'z-index': zIndex
+                  }).update()
+                var zIndez
+              }
+            });
+
 
             if (preFilter) {
               node_id = "#" + nodesByName[preFilter].id;
@@ -1065,7 +1188,6 @@
           cy.dblclick(interval);
 
           cy.on('dblclick', function (e) {
-            debugger;
             this.drilldownToCategory('_raw', 'test', e);
           }.bind(this));
 
@@ -1083,8 +1205,8 @@
                 center: {
                   eles: node_id
                 }
-              },
-              {duration: 1000
+              }, {
+                duration: 1000
 
               });
               // Adjust view to ensure that the node is ~ centre
@@ -1103,7 +1225,6 @@
 
           function highlightNextEle(start_id, end_id) {
             console.log(directedGlobal);
-            // debugger;
             // Highlight Elements
             startid_hash = "#" + start_id
             endid_hash = "#" + end_id
@@ -1229,6 +1350,7 @@
                 var element_del = cy.elements().not(cy.$('.highlighted'));
                 // Remove elements
                 cy.remove(element_del);
+                cy.elements().removeClass('highlighted');
 
                 break;
 
@@ -1243,6 +1365,8 @@
                 deleteElement('menu_select')
 
                 break;
+
+
 
               case "Clear Formatting":
                 // deleteElement('menu_list')
@@ -1291,14 +1415,14 @@
                   type: 'button',
                   'data-dismiss': 'modal'
                 }).addClass('btn btn-primary').text('Submit').on('click', function (modalEle) {
-                  // Post to HEC 
+                  // Post to HEC
                   var description = document.getElementById("http_description").value;
                   var http_event_code = document.getElementById("http_event_code").value;
                   var http_destination = document.getElementById("http_destination").value;
                   httpRequest(http_destination, http_event_code, cy.json(), description);
 
                 }))
-                myModal.show(); // Launch it!  
+                myModal.show(); // Launch it!
 
                 break;
 
@@ -1337,7 +1461,6 @@
                       Object.keys(nodesByName).forEach(function (key) {
 
                         if (nodesByName[key].children && nodesByName[key].children.length < numberInput) {
-                          // debugger;
                           removeNodesByCount.union(nodesByName[key].children)
                         } else {
                           // Delete the node
@@ -1352,14 +1475,66 @@
 
                     }
                     // Finally
-                    // debugger;
                     cy.remove(removeNodesByCount);
                   } else(
                     console.log("Error not a number")
                   )
 
                 }))
-                myModal.show(); // Launch it!  
+                myModal.show(); // Launch it!
+
+                break;
+
+              case "Search Edges":
+                // deleteElement('menu_list')
+                deleteElement('menu_select')
+
+                // Create Modal for HTTP Save State
+                var myModal = new Modal("modal1", {
+                  title: "Search Edges",
+                  backdrop: 'static',
+                  keyboard: false,
+                  destroyOnHide: true,
+                  type: 'normal'
+                });
+                /*
+                $(myModal.$el).on("hide", function() {
+                })*/
+                myModal.body
+                  .append($('<p>This menu allows you to search edges that have a string present on the edge and highlight it in a different colour</p>'));
+                myModal.body
+                  .append($('<h4>String To Search (Single Phrase)</h4>'));
+                myModal.body
+                  .append($('<input type="text" autocomplete="on" id="edgeTextSearch" name="edgeTextSearch" required>'));
+                myModal.body
+                  .append($('<h4>Color to Select</h4>'));
+                myModal.body
+                  .append($(' <input type="color" id="style_color" name="head" value="#e66465">'));
+
+                myModal.footer.append($('<button>').attr({
+                  type: 'button',
+                  'data-dismiss': 'modal'
+                }).addClass('btn btn-primary').text('Submit').on('click', function (modalEle) {
+                  var description = document.getElementById("edgeTextSearch").value;
+                  var edgeLineColor = document.getElementById("style_color").value;
+                  searchString = 'edge[label *= "' + description + '"]';
+                  searchFilter = cy.filter(searchString);
+                  // Create new edge search color style and apply it.
+                  edgeSearchColorNum++
+
+                  // Used to create the style in CSS Format.
+                  edgeSearchColorStyle = '.edgeSearchColor' + edgeSearchColorNum.toString()
+                  // Used to apply the style in CSS format
+                  edgeSearchColorStyleCy = 'edgeSearchColor' + edgeSearchColorNum.toString()
+                  // Highlighted Class
+                  cy.style()
+                    .selector(edgeSearchColorStyle)
+                    .style({
+                      'line-color': edgeLineColor
+                    }).update();
+                  cy.$(searchFilter).addClass(edgeSearchColorStyleCy)
+                }))
+                myModal.show(); // Launch it!
 
                 break;
 
