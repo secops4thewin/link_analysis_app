@@ -20,8 +20,6 @@
       'cytoscape-klay',
       'd3',
       'Modal.js',
-      'cytoscape-spread',
-      'weaverjs',
       'cytoscape-cose-bilkent',
       'cytoscape-dblclick'
 
@@ -41,8 +39,7 @@
       klay,
       d3,
       Modal,
-      spread,
-      weaver,
+
       coseBilkent,
       dblclick
       // Backbone
@@ -59,8 +56,6 @@
       popper(cytoscape);
       // Load Dagre Layout Extension
       klay(cytoscape);
-      // Load Spread Layout Extension
-      spread(cytoscape, weaver);
       // Load Cose Bilkent Layout Extension
       coseBilkent(cytoscape); // register extension
       dblclick(cytoscape);
@@ -516,13 +511,14 @@
           cy.style()
             .selector('edge')
             .style({
-              'width': 3,
+              'width': 5,
               'edge-text-rotation': 'autorotate',
               'target-arrow-shape': 'triangle',
               'arrow-scale': 2,
               'curve-style': 'bezier',
               'text-background-color': 'white',
               'text-opacity': 0.1,
+              'opacity': 0.3,
               'text-background-opacity': 0.8,
               'text-background-shape': 'roundrectangle',
               'min-zoomed-font-size': '15',
@@ -580,7 +576,7 @@
             .selector('node')
             .style({
               'background-color': 'data(color)',
-              'min-zoomed-font-size': '15'
+              'min-zoomed-font-size': '15',
             })
 
           // Node Highlighting class
@@ -693,20 +689,23 @@
               }
             }
             // Fcose Layout Options
+            // Fcose Layout Options
             var fcoseOptions = {
               stop: function () {
                 cy.removeAllListeners();
                 launchPostProcess();
               },
               name: layoutStyle,
-              quality: "proof",
+              quality: "default",
               // Type of layout animation. The option set is {'during', 'end', false}
               animate: false,
               fit: false,
               // For enabling tiling
               tile: true,
+              spacingFactor: 1.2,
               hideEdgesOnViewport: true,
               hideLabelsOnViewport: true,
+              nodeDimensionsIncludeLabels: true,
               // interpolate on high density displays instead of increasing resolution
               pixelRatio: 1,
               // a motion blur effect that increases perceived performance for little or no cost
@@ -715,7 +714,7 @@
               nodeRepulsion: 20000,
               nodeOverlap: 300,
               // separation amount between nodes
-              nodeSeparation: 300,
+              nodeSeparation: 500,
               // Nesting factor (multiplier) to compute ideal edge length for nested edges
               nestingFactor: 0.1,
               // Gravity force (constant)
@@ -796,32 +795,6 @@
               case "cose":
                 cy.layout(layoutCoseOptions).run();
 
-
-              case "spread":
-                cy.layout({
-                  stop: function () {
-                    cy.removeAllListeners();
-                    launchPostProcess();
-                  },
-                  name: layoutStyle,
-                  nodeDimensionsIncludeLabels: true,
-                  // Performance Options
-                  hideEdgesOnViewport: true,
-                  hideLabelsOnViewport: true,
-                  // interpolate on high density displays instead of increasing resolution
-                  pixelRatio: 1,
-                  expandingFactor: 10,
-                  // a motion blur effect that increases perceived performance for little or no cost
-                  motionBlur: true,
-                  prelayout: {
-                    name: 'klay'
-                  }, // Layout options for the first phase
-                  animate: false,
-                  fit: false,
-                  randomize: true
-                }).run();
-
-                break;
 
               default:
                 cy.layout({
@@ -994,7 +967,8 @@
                       .selector(collection)
                       .style({
                         'text-opacity': 1.0,
-                        'z-index': 999
+                        'z-index': 999,
+                        'opacity': 1.0
                       })
                       .update()
 
@@ -1022,7 +996,6 @@
                         x.addEventListener("click", function (e) {
                           // Add the saved graph as the current json
                           cy.json(graphStateForFocus)
-                          debugger;
                           var layoutStatic = cy.layout({
                             name: 'preset',
                             animation: true,
@@ -1048,6 +1021,80 @@
                       popper: {
 
                       } // my popper options here
+                    });
+
+                  },
+                },
+                {
+                  content: 'Condense',
+                  select: function (ele) {
+                    var collection;
+                    // Find the node if of the currently selected node
+                    node_id = "#" + ele.id();
+                    node = cy.$(node_id)
+                    positionOfNode = ele.position()
+                    focus_Node_Outgoers = ele.outgoers()
+                    focus_Node_Incomers = ele.incomers()
+                    collection = focus_Node_Outgoers.union(focus_Node_Incomers);
+                    collection = collection.union(node);
+                    notInCollection = cy.elements().not(cy.$(collection));
+                    concentricCount = 0;
+                    
+                    // Total nodes to calculate the amount of 
+                    totalNodes = collection.length
+                    if (totalNodes < 50){
+                      spacingFactorVar = 4
+                    }
+                    else if(totalNodes >= 50 && totalNodes <= 80){
+                      spacingFactorVar = 2
+
+                    }
+                    else if(totalNodes >= 81 && totalNodes <= 150){
+                      spacingFactorVar = 1
+
+                    }
+                    else{
+                      spacingFactorVar = 0.25
+                    }
+                    var layout = collection.layout({
+                      name: 'concentric',
+                      fit: false,
+                      animate: true,
+                      spacingFactor: spacingFactorVar,
+                      minNodeSpacing: 5,
+                      avoidOverlap: true,
+                      boundingBox: {
+                        x1: positionOfNode.x - 1,
+                        x2: positionOfNode.x + 1,
+                        y1: positionOfNode.y - 1,
+                        y2: positionOfNode.y + 1
+                      },
+                      concentric: function (ele) {
+                        if (ele.same(node)) {
+                          return 4;
+                        } else {
+                          return 1;
+                        }
+                      },
+                      levelWidth: function () {
+                        return 1;
+                      },
+
+
+
+                    });
+
+                    // Run the layout
+                    layout.run();
+
+                    cy.animate({
+                      zoom: 0.2,
+                      center: {
+                        eles: node
+                      }
+                    }, {
+                      duration: 1000
+
                     });
 
                   },
@@ -1148,6 +1195,7 @@
                   .selector(edge_id)
                   .style({
                     'text-opacity': 1.0,
+                    'opacity': 1.0,
                     'z-index': 999
                   }).update()
               }
@@ -1160,6 +1208,7 @@
                   .selector(edge_id)
                   .style({
                     'text-opacity': 0.1,
+                    'opacity': 0.3,
                     'z-index': zIndex
                   }).update()
                 var zIndez
@@ -1658,6 +1707,11 @@
           function toggleModal() {
             modal.classList.toggle("show-modal");
           }
+          function getRandomArbitrary(min, max) {
+            return Math.ceil(Math.random() * (max - min) + min);
+          }
+          
+          
 
         },
 

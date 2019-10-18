@@ -95,3 +95,5 @@ Post any feature requests as issues and I will look around to them.  My only fee
 [Here](https://github.com/d3/d3/blob/master/LICENSE)
 - This app uses Cytoscape js with the following license conditions
 [Here](https://raw.githubusercontent.com/cytoscape/cytoscape.js/master/LICENSE)
+- This app uses the FCose Layout that was created after research with the following paper
+[Here](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4708103/)
