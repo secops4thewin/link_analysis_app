@@ -1,6 +1,11 @@
-<form script="./cytoStateN.js" stylesheet="cytostate.css"  theme="light">
+<form script="./cytoStateN.js" stylesheet="cytostate.css" theme="dark">
   <label>Link Analysis Historical View</label>
-  <fieldset submitButton="true">
+  <search id="cytoState">
+    <query>index=cyto sourcetype=cyto:graph graph_id=$cytoId$</query>
+    <earliest>-365d@h</earliest>
+    <latest>now</latest>
+  </search>
+  <fieldset submitButton="false" autoRun="false">
     <input type="dropdown" token="cytoId" searchWhenChanged="true">
       <label>Previous State</label>
       <fieldForLabel>desc_time</fieldForLabel>
@@ -14,11 +19,6 @@
   </fieldset>
   <row>
     <panel depends="$cytoId$">
-       <search id="cytoState">
-          <query>index=cyto sourcetype=cyto:graph graph_id=$cytoId$</query>
-          <earliest>-365d@h</earliest>
-          <latest>now</latest>
-</search>
       <title>Load Former State</title>
       <html>
                   <div id="cy">   
