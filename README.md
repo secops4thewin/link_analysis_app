@@ -50,7 +50,7 @@ This app allows you to build paths between nodes.  The path algorithm is customi
   - bellmanFord
 
 ###### Path Selection Directed
-When performing path highlighting, you can honor the direction of the path by selecting true. So in the following scenario if you wanted to map a path from A through to C in the following  ```A<B<C``` setting this setting to False would allow the path to be created.
+When performing path highlighting, you can honor the direction of the path by selecting true. So in the following scenario if you wanted to map a path from A through to C in the following  ```A:B B:C``` setting this setting to False would allow the path to be created.
   - True
   - False (Default)
 
@@ -60,6 +60,10 @@ If you click and hold on a node, a context relevant menu will pop-up with the fo
 This option allows you to highlight all paths from the node recursively honoring the direction set in the format menu.  It will add a highlighted class to the nodes selected
 - Single Path Select
 This option allows you to draw a single path using the Algorithm in the format menu and honoring the direction set.  To use this option, press and hold on the starting node and select ```Single Path Select``` then click and hold the target node and select ```Single Path Select```.  If a path can be found the nodes will be highlighted.
+- Condense
+The condense option will condense the immediate children around the selected node in a concentric layout
+- Focus
+Same as condense.  But with a reset button.
 
 #### Core Selection Options
 If you click and hold in blank space on the node, a context relevant menu will pop-up with the following options.
@@ -69,8 +73,8 @@ Brings up an additional menu with the following options
     - Delete Highlighted Items - Remove all highlighted items
     - Delete Non Highlighted Items - Remove all non highlighted items
     - Refresh - Refreshes the layout, useful when you have removed nodes and want the layout to be recomputed.
-    - Remove Nodes By Count - Allows you to delete nodes off the graph that have less than or greater than the number you enter.
     - Save State - Allows you to save the state of the graph.  Please read save state below.
+    - Search Edges - Allows you to enter a single term and a color to modify the style of the edge with that value
 - Search Nodes - Allows you to find a node on the graph and zoom into the node.
 
 #### Save State
@@ -82,7 +86,7 @@ This call is performed via javascript so requires something similar to the follo
 https://answers.splunk.com/answers/766107/how-do-i-send-data-to-http-event-collector-via-jav.html
 
 ### Bugs / Missing Docos
-Please report any bugs to this page.  I accept pull requests. Alternatively hit me up on twitter @MickeyPerre
+Please report any bugs to github, Splunk Answers or alternatively hit me up on twitter @MickeyPerre
 
 ### Feature Requests
 Post any feature requests as issues and I will look around to them.  My only feedback prior to making feature requests is ensuring that the feature does not reduce the flexibility of the app :).

@@ -866,7 +866,7 @@
               document.body.appendChild(menuDataList);
 
               // Add Menu Items
-              menu_list_items = ['Delete Highlighted Items', 'Delete Non-Highlighted Items', 'Refresh', 'Clear Formatting', 'Save State', 'Search Edges'];
+              menu_list_items = ['Delete Highlighted Items', 'Delete Non-Highlighted Items', 'Refresh', 'Clear Formatting', 'Save State', 'Style Edges'];
               menu_list_items = menu_list_items.sort()
               var list = document.getElementById('menu_list');
               menu_list_items.forEach(function (item) {
@@ -1116,9 +1116,6 @@
                       destroyOnHide: true,
                       type: 'normal'
                     });
-                    /*
-                    $(myModal.$el).on("hide", function() {
-                    })*/
                     myModal.body
                       .append($('<p>Use the search menu to find and zoom into a node.</p>'));
 
@@ -1534,13 +1531,13 @@
 
                 break;
 
-              case "Search Edges":
+              case "Style Edges":
                 // deleteElement('menu_list')
                 deleteElement('menu_select')
 
                 // Create Modal for HTTP Save State
                 var myModal = new Modal("modal1", {
-                  title: "Search Edges",
+                  title: "Style Edges",
                   backdrop: 'static',
                   keyboard: false,
                   destroyOnHide: true,
@@ -1550,7 +1547,7 @@
                 $(myModal.$el).on("hide", function() {
                 })*/
                 myModal.body
-                  .append($('<p>This menu allows you to search edges that have a string present on the edge and highlight it in a different colour</p>'));
+                  .append($('<p>This menu allows you to style edges that have a string present on the edge and highlight it in a different colour</p>'));
                 myModal.body
                   .append($('<h4>String To Search (Single Phrase)</h4>'));
                 myModal.body
@@ -1710,9 +1707,6 @@
           function getRandomArbitrary(min, max) {
             return Math.ceil(Math.random() * (max - min) + min);
           }
-          
-          
-
         },
 
 
