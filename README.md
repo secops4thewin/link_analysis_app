@@ -74,7 +74,7 @@ Brings up an additional menu with the following options
     - Delete Non Highlighted Items - Remove all non highlighted items
     - Refresh - Refreshes the layout, useful when you have removed nodes and want the layout to be recomputed.
     - Save State - Allows you to save the state of the graph.  Please read save state below.
-    - Search Edges - Allows you to enter a single term and a color to modify the style of the edge with that value
+    - Style Edges - Allows you to enter a single term and a color to modify the style of the edge with that value (Originally Search Edges)
 - Search Nodes - Allows you to find a node on the graph and zoom into the node.
 
 #### Save State
