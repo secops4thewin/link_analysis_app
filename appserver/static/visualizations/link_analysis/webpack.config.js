@@ -2,12 +2,17 @@ var webpack = require('webpack');
 var path = require('path');
 
 module.exports = {
-    entry: 'visualization_source',
+    entry: ['visualization_source'],
     resolve: {
         root: [
             path.join(__dirname, 'src'),
-        ]
+        ],
     },
+    module: {
+        loaders: [
+            { test: /\.json$/, loader: "json-loader" }
+        ]
+      },
 
  node: {
     console: false,
@@ -20,6 +25,12 @@ module.exports = {
     },
     externals: [
         'api/SplunkVisualizationBase',
-        'api/SplunkVisualizationUtils'
+        'api/SplunkVisualizationUtils',
+        'splunkjs/mvc/searchmanager',
+        'splunkjs/mvc/simplexml/ready!',
+        'splunkjs/mvc'
     ]
 };
+
+
+
